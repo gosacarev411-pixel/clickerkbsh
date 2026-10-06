@@ -117,4 +117,5 @@ buyBoostBtn.addEventListener('click', () => {
         alert('Запрос на оплату отправлен!');
     } else {
         alert('Покупка доступна только внутри приложения Telegram.');
-    });
+    }
+});
