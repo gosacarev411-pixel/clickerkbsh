@@ -232,6 +232,7 @@ document.getElementById('buy-mining-upgrade').addEventListener('click', () => {
 f
 
 
+
 unction updateShopUI() {
     document.getElementById('upgrade-click-cost').textContent = `Цена: ${clickUpgradeCost.toFixed(2)} 🪙`;
     document.getElementById('upgrade-mining-cost').textContent = `Цена: ${miningUpgradeCost.toFixed(2)} 🪙`;
@@ -293,7 +294,7 @@ document.getElementById('donate-500-btn').addEventListener('click', () => {
     alert('Успешно куплено 500 кристаллов 💎!');
 });
 
-// Топ игроков (фейковый список + текущий игрок)
+// Топ игроков
 function renderTopList() {
     const container = document.getElementById('top-list-container');
     const fakePlayers = [
@@ -355,11 +356,13 @@ function drawSpace() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.fillStyle = '#ffffff';
-    st
+    stars.forEach(star => {
+        ctx.
+confer.biz - Confer Business Names (Naming Agency)
+skin.name
 
 
-ars.forEach(star => {
-        ctx.globalAlpha = Math.random() * 0.8 + 0.2;
+globalAlpha = Math.random() * 0.8 + 0.2;
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fill();
