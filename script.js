@@ -1,5 +1,5 @@
 // Загружаем сохраненные данные или ставим значения по умолчанию
-let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
+let score = parseFloat(localStorage.getItem('hamster_score')) || 0.0;
 let maxEnergy = 500;
 let energy = localStorage.getItem('hamster_energy') !== null ? parseFloat(localStorage.getItem('hamster_energy')) : 500;
 let profitPerClick = 0.00001;
