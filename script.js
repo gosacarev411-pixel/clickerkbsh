@@ -86,7 +86,9 @@ function initApp() {
 window.onload = loadGame;
 
 function saveName() {
-    const name = document.getElementById('username-input').value.trim();
+    const input = document.getElementById('username-input');
+    if (!input) return;
+    const name = input.value.trim();
     if (name.length < 2) { 
         alert("Имя должно быть от 2 символов!"); 
         return; 
@@ -119,13 +121,11 @@ function updateUI() {
     document.getElementById('price-shawarma').innerText = getCost(500, upgrades.shawarma).toLocaleString() + ' ₽';
     document.getElementById('price-factory').innerText = getCost(10000, upgrades.factory).toLocaleString() + ' ₽';
     document.getElementById('price-oil').innerText = getCost(250000, upgrades.oil).toLocaleString() + ' ₽';
-    document.getElementById('price-it').innerText = getCost(2000000, upgrades.it).toLocaleString() + ' ₽';
-    d
-upgrades.it
-upgrades.it
+    document.getElementById('price-it').innerText = getCost(200
 
 
-ocument.getElementById('price-space').innerText = getCost(15000000, upgrades.space).toLocaleString() + ' ₽';
+0000, upgrades.it).toLocaleString() + ' ₽';
+    document.getElementById('price-space').innerText = getCost(15000000, upgrades.space).toLocaleString() + ' ₽';
 
     updateHungerUI();
     checkRank();
@@ -151,7 +151,7 @@ function checkRank() {
     }
 }
 
-// Игровой цикл (таймер)
+// Игровой цикл
 setInterval(() => {
     if (!playerName) return;
     if (hunger > 0) {
@@ -259,6 +259,10 @@ function buyDonate(type) {
     saveGame();
     updateUI();
     if (tg && tg.HapticFeedback) {
-        try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+upgrades.it
+upgrades.it
+
+
+try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
     }
 }
