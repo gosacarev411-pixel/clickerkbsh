@@ -1,4 +1,4 @@
-// --- ИГРОВОЙ СКРИПТ (ПОЛНОСТЬЮ ИСПРАВЛЕННЫЙ) ---
+// --- ИГРОВОЙ СКРИПТ (ВСЕ ФУНКЦИИ НА МЕСТЕ) ---
 
 let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
 let donateBalance = parseInt(localStorage.getItem('hamster_donate')) || 0;
@@ -194,6 +194,31 @@ if (isRegenerating) {
     updateUI();
 }
 
+// Функция всплывающего текста при клике
+function createFloatingText(x, y, text) {
+    const el = document.createElement('div');
+    el.textContent = text;
+    el.style.position = 'fixed';
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.style.color = '#00cec9';
+
+
+el.style.fontSize = '18px';
+    el.style.fontWeight = 'bold';
+    el.style.zIndex = '9999';
+    el.style.pointerEvents = 'none';
+    el.style.transition = 'all 0.6s ease-out';
+    el.style.transform = 'translate(-50%, -50%)';
+
+    document.body.appendChild(el);
+    setTimeout(() => {
+        el.style.top = (y - 60) + 'px';
+        el.style.opacity = '0';
+    }, 20);
+    setTimeout(() => el.remove(), 650);
+}
+
 if (coinEl) {
     coinEl.addEventListener('click', (e) => {
         if (!isRegenerating && energy >= energyCost) {
@@ -202,10 +227,7 @@ if (coinEl) {
             updateUI();
             saveGameData();
             
-            createFloatingT
-
-
-ext(e.clientX, e.clientY, '+0.000001');
+            createFloatingText(e.clientX, e.clientY, '+0.000001');
 
             coinEl.style.transform = 'scale(0.9)';
             setTimeout(() => {
@@ -263,28 +285,6 @@ function startRegenerationTimer(createNew = true) {
     }, 1000);
 }
 
-function createFloatingText(x, y, text) {
-    const el = document.createElement('div');
-    el.textContent = text;
-    el.style.position = 'fixed';
-    el.style.left = x + 'px';
-    el.style.top = y + 'px';
-    el.style.color = '#00cec9';
-    el.style.fontSize = '18px';
-    el.style.fontWeight = 'bold';
-    el.style.zIndex = '9999';
-    el.style.pointerEvents = 'none';
-    el.style.transition = 'all 0.6s ease-out';
-    el.style.transform = 'translate(-50%, -50%)';
-
-    document.body.appendChild(el);
-    setTimeout(() => {
-        el.style.top = (y - 60) + 'px';
-        el.style.opacity = '0';
-    }, 20);
-    setTimeout(() => el.remove(), 650);
-}
-
 const buyClickBtn = document.getElementById('buy-click-upgrade');
 if (buyClickBtn) {
     buyClickBtn.addEventListener('click', () => {
@@ -340,11 +340,11 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         btn.classList.add('active');
-        const target = document.getElementById(btn.getAttribute('data-target'));
-        if (target) target.classL
+        const target = document.getElementById(btn.getAttribute('data-targe
 
 
-ist.add('active');
+t'));
+        if (target) target.classList.add('active');
     });
 });
 
