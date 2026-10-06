@@ -1,9 +1,9 @@
-// --- ИГРОВОЙ СКРИПТ (ПРИРОСТ 0.000001 ЗА ТАП) ---
+// --- ИГРОВОЙ СКРИПТ (ИСПРАВЛЕНА ОШИБКА СИНТАКСИСА) ---
 
 let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
 let donateBalance = parseInt(localStorage.getItem('hamster_donate')) || 0;
 let maxEnergy = 500;
-let profitPerClick = parseFloat(localStorage.getItem('hamster_profit')) || 0.000001; // Установлено 0.000001 за тап
+let profitPerClick = parseFloat(localStorage.getItem('hamster_profit')) || 0.000001;
 let miningPower = parseFloat(localStorage.getItem('hamster_mining')) || 0;
 let energyCost = 1;
 
@@ -61,7 +61,6 @@ function saveGameData() {
 // ГЛАВНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ ИНТЕРФЕЙСА
 function updateUI() {
     if (scoreEl) {
-        // Отображаем до 6 знаков после запятой, чтобы было видно прирост
         scoreEl.textContent = score.toFixed(6);
     }
     if (donateBalanceEl) donateBalanceEl.textContent = donateBalance;
@@ -75,13 +74,12 @@ function updateUI() {
             if (regenerationTimeLeft < 0) regenerationTimeLeft = 0;
             const minutes = Math.floor(regenerationTimeLeft / 60);
             const seconds = regenerationTimeLeft % 60;
-            timerDisplayEl.textContent = `Восстановление: ${minutes.toString().padStart(2, '0')}:${seconds.to
-
-
-String().padStart(2, '0')}`;
+            timerDisplayEl.textContent = `Восстановление: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             timerDisplayEl.style.display = 'block';
         } else {
-            timerDisplayEl.style.display = 'none';
+
+
+timerDisplayEl.style.display = 'none';
         }
     }
 
@@ -120,15 +118,20 @@ function renderSkins() {
     skinsData.forEach(skin => {
         const isOwned = ownedSkins.includes(skin.id);
         const isEquipped = currentSkinId === skin.id;
+        
+        let btnText = 'Купить (' + skin.price + ' 💎)';
+        if (isEquipped) {
+            btnText = 'Надето';
+        } else if (isOwned) {
+            btnText = 'Надеть';
+        }
 
         const card = document.createElement('div');
         card.className = 'skin-card';
         card.innerHTML = `
             <img src="${skin.img || 'https://cdn-icons-png.flaticon.com/512/2738/2738245.png'}" alt="${skin.name}">
             <h4>${skin.name}</h4>
-            <button class="skin-action-btn ${isEquipped ? 'equipped' : ''}">
-                ${isEquipped ? 'Надето' : (isOwned ? 'Надеть' : `Купить (${skin.price} 💎)`)}
-            </button>
+            <button class="skin-action-btn ${isEquipped ? 'equipped' : ''}">${btnText}</button>
         `;
 
         card.querySelector('button').addEventListener('click', () => {
@@ -173,7 +176,6 @@ function renderTopList() {
     });
 }
 
-// Восстановление времени после перезагрузки
 let savedEndTime = localStorage.getItem('hamster_endTime');
 if (isRegenerating && savedEndTime) {
     let currentTime = Math.floor(Date.now() / 1000);
@@ -194,21 +196,19 @@ if (isRegenerating) {
     updateUI();
 }
 
-// Клик по монете с анимацией и всплывающим текстом
 if (coinEl) {
     coinEl.addEventListener('click', (e) => {
         if (!isRegenerating && energy >= energyCost) {
             score += profitPerClick;
             energy -= energyCost;
-
-
-updateUI();
+            updateUI();
             saveGameData();
             
-            // Всплывающий текст с точным приростом
-            createFloatingText(e.clientX, e.clientY, `+0.000001`);
+            createFloatingText(e.c
 
-            // Эффект уменьшения монеты при клике
+
+lientX, e.clientY, `+0.000001`);
+
             coinEl.style.transform = 'scale(0.9)';
             setTimeout(() => {
                 coinEl.style.transform = 'scale(1)';
@@ -222,7 +222,6 @@ updateUI();
     });
 }
 
-// Пассивный майнинг
 setInterval(() => {
     if (miningPower > 0) {
         score += miningPower;
@@ -231,7 +230,6 @@ setInterval(() => {
     }
 }, 1000);
 
-// Таймер энергии
 function startRegenerationTimer(createNew = true) {
     isRegenerating = true;
     if (createNew) {
@@ -289,13 +287,12 @@ function createFloatingText(x, y, text) {
     setTimeout(() => el.remove(), 650);
 }
 
-// Кнопки улучшений
 const buyClickBtn = document.getElementById('buy-click-upgrade');
 if (buyClickBtn) {
     buyClickBtn.addEventListener('click', () => {
         if (score >= clickUpgradeCost) {
             score -= clickUpgradeCost;
-            profitPerClick += 0.000001; // Увеличиваем клик на 0.000001 при покупке улучшения
+            profitPerClick += 0.000001;
             clickUpgradeCost *= 1.5;
             updateUI();
             saveGameData();
@@ -320,7 +317,6 @@ if (buyMiningBtn) {
     });
 }
 
-// Донат
 const donate100 = document.getElementById('donate-100-btn');
 if (donate100) {
     donate100.addEventListener('click', () => {
@@ -341,20 +337,19 @@ if (donate500) {
     });
 }
 
-// Навигация
 document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-
-
-document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         btn.classList.add('active');
         const target = document.getElementById(btn.getAttribute('data-target'));
-        if (target) target.classList.add('active');
+        if (target) target.classList.add('
+
+
+active');
     });
 });
 
-// Анимация космоса
 const canvas = document.getElementById('space-canvas');
 if (canvas) {
     const ctx = canvas.getContext('2d');
