@@ -6,11 +6,9 @@ let maxEnergy = 500;
 let energy = localStorage.getItem('hc_energy') !== null ? parseFloat(localStorage.getItem('hc_energy')) : 500;
 let energyCost = 1;
 
-// Стоимость улучшений
 let mining1Cost = parseInt(localStorage.getItem('hc_m1_cost')) || 50;
 let mining2Cost = parseInt(localStorage.getItem('hc_m2_cost')) || 500;
 
-// Элементы интерфейса
 const scoreEl = document.getElementById('score');
 const profitPerHourVal = document.getElementById('profit-per-hour-val');
 const profitPerClickVal = document.getElementById('profit-per-click-val');
@@ -19,6 +17,8 @@ const energyCurrent = document.getElementById('energy-current');
 const energyMax = document.getElementById('energy-max');
 const energyProgress = document.getElementById('energy-progress');
 const coinEl = document.getElementById('coin');
+const m1PriceEl = document.getElementById('m1-price');
+const m2PriceEl = document.getElementById('m2-price');
 
 function saveData() {
     localStorage.setItem('hc_score', score);
@@ -37,11 +37,13 @@ function updateUI() {
     if (energyCurrent) energyCurrent.textContent = Math.floor(energy);
     if (energyMax) energyMax.textContent = maxEnergy;
 
+    if (m1PriceEl) m1PriceEl.textContent = mining1Cost + ' 🪙';
+    if (m2PriceEl) m2PriceEl.textContent = mining2Cost + ' 🪙';
+
     let percent = (energy / maxEnergy) * 100;
     if (energyProgress) energyProgress.style.width = percent + '%';
 }
 
-// Клик по монете/бутылке
 if (coinEl) {
     coinEl.addEventListener('pointerdown', (e) => {
         if (energy >= energyCost) {
@@ -56,7 +58,6 @@ if (coinEl) {
     });
 }
 
-// Анимация всплывающего числа при клике
 function showFloatingText(x, y, text) {
     const el = document.createElement('div');
     el.textContent = text;
@@ -79,7 +80,6 @@ function showFloatingText(x, y, text) {
     setTimeout(() => el.remove(), 550);
 }
 
-// Пассивный доход и восстановление энергии каждую секунду
 setInterval(() => {
     if (energy < maxEnergy) {
         energy = Math.min(maxEnergy, energy + 3);
@@ -91,7 +91,6 @@ setInterval(() => {
     saveData();
 }, 1000);
 
-// Покупка улучшений (Шахты)
 const buyM1 = document.getElementById('buy-mining-1');
 if (buyM1) {
     buyM1.addEventListener('click', () => {
@@ -99,7 +98,6 @@ if (buyM1) {
             score -= mining1Cost;
             profitPerHour += 10;
             mining1Cost = Math.floor(mining1Cost * 1.5);
-            buyM1.querySelector('.card-price').textContent = mining1Cost + ' 🪙';
             updateUI();
             saveData();
             alert('Успешно куплено!');
@@ -112,14 +110,13 @@ if (buyM1) {
 const buyM2 = document.getElementById('buy-mining-2');
 if (buyM2) {
     buyM2.addEventListener('click', () => {
-        if (score >=
+        if (score >= mining2Cost) {
+            score -= mining2C
 
 
-mining2Cost) {
-            score -= mining2Cost;
+ost;
             profitPerHour += 100;
             mining2Cost = Math.floor(mining2Cost * 1.5);
-            buyM2.querySelector('.card-price').textContent = mining2Cost + ' 🪙';
             updateUI();
             saveData();
             alert('Успешно куплено!');
@@ -129,7 +126,6 @@ mining2Cost) {
     });
 }
 
-// Переключение нижнего меню (вкладки)
 document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
