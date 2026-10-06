@@ -1,4 +1,4 @@
-// --- ИГРОВОЙ СКРИПТ (ВСЕ ФУНКЦИИ НА МЕСТЕ) ---
+// --- ИГРОВОЙ СКРИПТ (ФИНАЛЬНЫЙ ИСПРАВЛЕННЫЙ) ---
 
 let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
 let donateBalance = parseInt(localStorage.getItem('hamster_donate')) || 0;
@@ -194,7 +194,6 @@ if (isRegenerating) {
     updateUI();
 }
 
-// Функция всплывающего текста при клике
 function createFloatingText(x, y, text) {
     const el = document.createElement('div');
     el.textContent = text;
@@ -202,10 +201,11 @@ function createFloatingText(x, y, text) {
     el.style.left = x + 'px';
     el.style.top = y + 'px';
     el.style.color = '#00cec9';
+    el.style.fontSize = '18px';
+    el.
 
 
-el.style.fontSize = '18px';
-    el.style.fontWeight = 'bold';
+style.fontWeight = 'bold';
     el.style.zIndex = '9999';
     el.style.pointerEvents = 'none';
     el.style.transition = 'all 0.6s ease-out';
@@ -340,11 +340,11 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         btn.classList.add('active');
-        const target = document.getElementById(btn.getAttribute('data-targe
+        const target = document.getElementById(btn.getAttribute('data-target'));
+        if (target) target.classL
 
 
-t'));
-        if (target) target.classList.add('active');
+ist.add('active');
     });
 });
 
@@ -358,25 +358,29 @@ if (canvas) {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    let stars = Array.from({ length: 100 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 2,
-        speed: Math.random() * 0.5 + 0.1
-    }));
+    let stars = [];
+    for (let i = 0; i < 100; i++) {
+        stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2,
+            speed: Math.random() * 0.5 + 0.1
+        });
+    }
 
     function drawSpace() {
         ctx.fillStyle = '#0b091a';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#ffffff';
-        stars.forEach(star => {
+        for (let i = 0; i < stars.length; i++) {
+            let star = stars[i];
             ctx.globalAlpha = Math.random() * 0.8 + 0.2;
             ctx.beginPath();
             ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
             ctx.fill();
             star.y += star.speed;
             if (star.y > canvas.height) star.y = 0;
-        });
+        }
         requestAnimationFrame(drawSpace);
     }
     drawSpace();
