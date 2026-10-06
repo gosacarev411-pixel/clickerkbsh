@@ -1,152 +1,103 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
+let maxEnergy = 500;
+let profitPerClick = 0.0001;
+let energyCost = 1;
+
+let isRegenerating = localStorage.getItem('hamster_isRegenerating') === 'true';
+let energy = localStorage.getItem('hamster_energy') !== null ? parseFloat(localStorage.getItem('hamster_energy')) : 500;
+
+let regenerationTimeLeft = 30 * 60;
+let timerInterval = null;
+
+const TOTAL_REGEN_TIME = 30 * 60;
+
+let savedEndTime = localStorage.getItem('hamster_endTime');
+if (isRegenerating && savedEndTime) {
+    let currentTime = Math.floor(Date.now() / 1000);
+    let timeLeft = parseInt(savedEndTime) - currentTime;
+
+    if (timeLeft <= 0) {
+        energy = maxEnergy;
+        isRegenerating = false;
+        localStorage.removeItem('hamster_endTime');
+    } else {
+        regenerationTimeLeft = timeLeft;
+        energy = 0;
+    }
 }
 
-#matrix-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1;
-    pointer-events: none;
+const scoreEl = document.getElementById('score');
+const coinEl = document.getElementById('coin');
+const energyTextEl = document.getElementById('energy-text');
+const energyProgressEl = document.getElementById('energy-progress');
+const buyBoostBtn = document.getElementById('buy-boost-btn');
+
+let timerDisplayEl = document.getElementById('regeneration-timer');
+if (!timerDisplayEl) {
+    timerDisplayEl = document.createElement('div');
+    timerDisplayEl.id = 'regeneration-timer';
+    energyTextEl.parentNode.parentNode.insertBefore(timerDisplayEl, energyTextEl.parentNode.nextSibling);
 }
 
-body {
-    background-color: #050505;
-    color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
-    padding: 20px;
-    overflow: hidden;
-    user-select: none;
+function saveGameData() {
+    localStorage.setItem('hamster_score', score);
+    localStorage.setItem('hamster_energy', energy);
+    localStorage.setItem('hamster_isRegenerating', isRegenerating);
 }
 
-.header {
-    width: 100%;
-    text-align: center;
-    margin-top: 20px;
-    z-index: 1;
+if (isRegenerating) {
+    startRegenerationTimer(false);
+} else {
+    updateUI();
 }
 
-.score-container {
-    font-size: 42px;
-    font-weight: 800;
-    color: #f39c12;
-    text-shadow: 0 2px 15px rgba(243, 156, 18, 0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
+coinEl.addEventListener('click', (e) => {
+    if (!isRegenerating && energy >= energyCost) {
+        score += profitPerClick;
+        energy -= energyCost;
+        updateUI();
+        saveGameData();
+        createFloatingText(e.clientX, e.clientY, `+${profitPerClick}`);
 
-.score-container span {
-    font-size: 24px;
-}
+        if (energy < energyCost) {
+            energy = 0;
+            startRegenerationTimer(true);
+        }
+    }
+});
 
-.game-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex-grow: 1;
-    z-index: 1;
-}
+function startRegenerationTimer(createNew = true) {
+    isRegenerating = true;
+    
+    if (createNew) {
+        regenerationTimeLeft = TOTAL_REGEN_TIME;
+        let endTime = Math.floor(Date.now() / 1000) + TOTAL_REGEN_TIME;
+        localStorage.setItem('hamster_endTime', endTime);
+    }
+    
+    updateUI();
+    saveGameData();
 
-.coin {
-    width: 210px;
-    height: 210px;
-    background: radial-gradient(circle, #f1c40f 0%, #e67e22 100%);
-    border-radius: 50%;
-    box-shadow: 0 10px 30px rgba(241, 196, 15, 0.3), inset 0 4px 10px rgba(255, 255, 255, 0.4);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 90px;
-    transition: transform 0.08s ease, box-shadow 0.08s ease;
-}
+    if (timerInterval) clearInterval(timerInterval);
 
-.coin:active {
-    transform: scale(0.92);
-    box-shadow: 0 5px 15px rgba(241, 196, 15, 0.2);
-}
+    timerInterval = setInterval(() => {
+        let savedEndTime = localStorage.getItem('hamster_endTime');
+        if (savedEndTime) {
+            let currentTime = Math.floor(Date.now() / 1000);
+            regenerationTimeLeft = parseInt(savedEndTime) - currentTime;
+        } else {
+            regenerationTimeLeft--;
+        }
 
-.footer {
-    width: 100%;
-    max-width: 400px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 20px;
-    z-index: 1;
-}
+        updateUI();
 
-.energy-container {
-    width: 100%;
-}
-
-.energy-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    font-weight: 600;
-    color: #b2bec3;
-    margin-bottom: 6px;
-}
-
-.energy-bar-background {
-    width: 100%;
-    height: 16px;
-    background-color: rgba(45, 52, 54, 0.8);
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
-}
-
-.energy-progress {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, #00b894, #00cec9);
-    border-radius: 8px;
-    transition: width 0.2s ease;
-}
-
-#regeneration-timer {
-    background: rgba(255, 71, 87, 0.2);
-    border: 1px solid rgba(255, 71, 87, 0.4);
-    padding: 8px;
-    border-radius: 10px;
-    color: #ff4757 !important;
-    font-size: 15px !important;
-    font-weight: 700;
-    text-align: center;
-}
-
-.buy-boost-btn {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-    color: white;
-    border: none;
-    border-radius: 14px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
-    transition: opacity 0.2s, transform 0.1s;
-}
-
-.buy-boost-btn:active {
-    transform: scale(0.97);
-    opacity: 0.9;
-}
+        if (regenerationTimeLeft <= 0) {
+            clearInterval(timerInterval);
+            energy = maxEnergy;
+            isRegenerating = false;
+            regenerationTimeLeft = TOTAL_REGEN_TIME;
+            localStorage.removeItem('hamster_endTime');
+            updateUI();
+            saveGameData();
+        }
+    },
