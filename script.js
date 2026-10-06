@@ -1,147 +1,232 @@
-let score = parseFloat(localStorage.getItem('hc_score')) || 0;
-let profitPerHour = parseInt(localStorage.getItem('hc_profit_hour')) || 0;
-let profitPerClick = parseInt(localStorage.getItem('hc_profit_click')) || 1;
+const tg = window.Telegram.WebApp;
+tg.expand();
 
-let maxEnergy = 500;
-let energy = localStorage.getItem('hc_energy') !== null ? parseFloat(localStorage.getItem('hc_energy')) : 500;
-let energyCost = 1;
+let playerName = '';
+let balance = 0;
+let totalEarned = 0;
+let crystals = 5;
+let clickPower = 1;
+let passiveIncome = 0;
+let hunger = 100;
 
-let mining1Cost = parseInt(localStorage.getItem('hc_m1_cost')) || 50;
-let mining2Cost = parseInt(localStorage.getItem('hc_m2_cost')) || 500;
+let upgrades = {
+    hat: 0,
+    shawarma: 0,
+    factory: 0,
+    oil: 0,
+    it: 0,
+    space: 0
+};
 
-const scoreEl = document.getElementById('score');
-const profitPerHourVal = document.getElementById('profit-per-hour-val');
-const profitPerClickVal = document.getElementById('profit-per-click-val');
-const energyVal = document.getElementById('energy-val');
-const energyCurrent = document.getElementById('energy-current');
-const energyMax = document.getElementById('energy-max');
-const energyProgress = document.getElementById('energy-progress');
-const coinEl = document.getElementById('coin');
-const m1PriceEl = document.getElementById('m1-price');
-const m2PriceEl = document.getElementById('m2-price');
+const ranks = [
+    { name: "Бродяга", threshold: 0, avatar: "📦" },
+    { name: "Работяга", threshold: 5000, avatar: "🧥" },
+    { name: "Стартапер", threshold: 100000, avatar: "💻" },
+    { name: "Бизнесмен", threshold: 2000000, avatar: "👔" },
+    { name: "Олигарх", threshold: 50000000, avatar: "🚗" },
+    { name: "🏆 Миллиардер", threshold: 1000000000, avatar: "🏝️" }
+];
 
-function saveData() {
-    localStorage.setItem('hc_score', score);
-    localStorage.setItem('hc_profit_hour', profitPerHour);
-    localStorage.setItem('hc_profit_click', profitPerClick);
-    localStorage.setItem('hc_energy', energy);
-    localStorage.setItem('hc_m1_cost', mining1Cost);
-    localStorage.setItem('hc_m2_cost', mining2Cost);
+// Загрузка через Telegram CloudStorage или localStorage
+function loadGame() {
+    if (tg.CloudStorage) {
+        tg.CloudStorage.getItem('save_game_all', (err, val) => {
+            if (!err && val) {
+                try {
+                    const data = JSON.parse(val);
+                    restoreData(data);
+                } catch (e) { console.error(e); }
+            }
+            initApp();
+        });
+    } else {
+        const saved = localStorage.getItem('save_game_all');
+        if (saved) {
+            try { restoreData(JSON.parse(saved)); } catch (e) {}
+        }
+        initApp();
+    }
+}
+
+function restoreData(data) {
+    playerName = data.playerName || '';
+    balance = data.balance || 0;
+    totalEarned = data.totalEarned || 0;
+    crystals = data.crystals !== undefined ? data.crystals : 5;
+    clickPower = data.clickPower || 1;
+    passiveIncome = data.passiveIncome || 0;
+    hunger = data.hunger !== undefined ? data.hunger : 100;
+    if (data.upgrades) upgrades = data.upgrades;
+}
+
+function saveGame() {
+    const data = { playerName, balance, totalEarned, crystals, clickPower, passiveIncome, hunger, upgrades };
+    const str = JSON.stringify(data);
+    if (tg.CloudStorage) {
+        tg.CloudStorage.setItem('save_game_all', str);
+    } else {
+        localStorage.setItem('save_game_all', str);
+    }
+}
+
+function initApp() {
+    if (playerName) {
+        document.getElementById('modal-reg').classList.add('hidden');
+        updateUI();
+    }
+}
+
+window.onload = loadGame;
+
+function saveName() {
+    const name = document.getElementById('username-input').value.trim();
+    if (name.length < 2) { alert("Имя должно быть от 2 символов!"); return; }
+    playerName = name;
+    document.getElementById('modal-reg').classList.add('hidden');
+    saveGame();
+    updateUI();
+}
+
+function switchScreen(id, el) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+    el.classList.add('active');
+}
+
+function getCost(base, count) {
+    return Math.floor(base * Math.pow(1.22, count));
 }
 
 function updateUI() {
-    if (scoreEl) scoreEl.textContent = Math.floor(score);
-    if (profitPerHourVal) profitPerHourVal.textContent = profitPerHour + ' 🪙';
-    if (profitPerClickVal) profitPerClickVal.textContent = '+' + profitPerClick;
-    if (energyVal) energyVal.textContent = Math.floor(energy) + '/' + maxEnergy;
-    if (energyCurrent) energyCurrent.textContent = Math.floor(energy);
-    if (energyMax) energyMax.textContent = maxEnergy;
+    document.getElementById('player-name').innerText = playerName;
+    document.getElementById('balance').innerText = balance.toLocaleString();
+    document.getElementById('crystals-count').innerText = crystals;
+    document.getElementById('passive-income').innerText = passiveIncome.toLocaleString();
+    document.getElementById('click-power-val').innerText = clickPower.toLocaleString();
+    
+    document.getElementById('price-hat').innerText = getCost(50, upgrades.hat).toLocaleString() + ' ₽';
+    document.getElementById('price-shawarma').innerText = getCost(500, upgrades.shawarma).toLocaleString() + ' ₽';
+    document.getElementById('price-factory').innerText = getCost(10000, upgrades.factory).toLocaleString() + ' ₽';
+    document.getElementById('price-oil').innerText = getCost(250000, upgrades.oil).toLocaleString() + ' ₽';
+    document.getElementById('price-it').innerText = getCost(2000000, upgrades.it).toLocaleString() + ' ₽';
+    document.getElementById('price-space').innerText = getCost(15000000, upgrades.space).toLocaleString() + ' ₽';
 
-    if (m1PriceEl) m1PriceEl.textContent = mining1Cost + ' 🪙';
-    if (m2PriceEl) m2PriceEl.textContent = mining2Cost + ' 🪙';
-
-    let percent = (energy / maxEnergy) * 100;
-    if (energyProgress) energyProgress.style.width = percent + '%';
+    updateHungerUI();
+    checkRank();
 }
 
-if (coinEl) {
-    coinEl.addEventListener('pointerdown', (e) => {
-        if (energy >= energyCost) {
-            score += profitPerClick;
-            energy -= energyCost;
-            updateUI();
-            saveData();
+functio
 
-            showFloatingText(e.clientX, e.clientY, '+' + profitPerClick);
-            if (energy < 0) energy = 0;
+
+n updateHungerUI() {
+    document.getElementById('hunger-bar').style.width = hunger + '%';
+    document.getElementById('hunger-text').innerText = hunger;
+    const bar = document.getElementById('hunger-bar');
+    bar.style.backgroundColor = hunger > 50 ? 'var(--success-color)' : (hunger > 20 ? '#ffa502' : 'var(--danger-color)');
+}
+
+function checkRank() {
+    for (let i = ranks.length - 1; i >= 0; i--) {
+        if (totalEarned >= ranks[i].threshold) {
+            document.getElementById('player-rank').innerText = ranks[i].name;
+            document.getElementById('avatar-icon').innerText = ranks[i].avatar;
+            if (i === ranks.length - 1 && totalEarned >= 1000000000) {
+                document.getElementById('win-modal').classList.remove('hidden');
+            }
+            break;
         }
-    });
+    }
 }
 
-function showFloatingText(x, y, text) {
-    const el = document.createElement('div');
-    el.textContent = text;
-    el.style.position = 'fixed';
-    el.style.left = x + 'px';
-    el.style.top = y + 'px';
-    el.style.color = '#ffa502';
-    el.style.fontSize = '22px';
-    el.style.fontWeight = 'bold';
-    el.style.zIndex = '9999';
-    el.style.pointerEvents = 'none';
-    el.style.transition = 'all 0.5s ease-out';
-    el.style.transform = 'translate(-50%, -50%)';
-
-    document.body.appendChild(el);
-    setTimeout(() => {
-        el.style.top = (y - 60) + 'px';
-        el.style.opacity = '0';
-    }, 20);
-    setTimeout(() => el.remove(), 550);
-}
-
+// Игровой цикл
 setInterval(() => {
-    if (energy < maxEnergy) {
-        energy = Math.min(maxEnergy, energy + 3);
+    if (!playerName) return;
+    if (hunger > 0) {
+        hunger = Math.max(0, hunger - 1);
+        updateHungerUI();
     }
-    if (profitPerHour > 0) {
-        score += profitPerHour / 3600;
+    if (passiveIncome > 0 && hunger > 0) {
+        balance += passiveIncome;
+        totalEarned += passiveIncome;
+        updateUI();
     }
-    updateUI();
-    saveData();
 }, 1000);
 
-// Покупка Космического бура (Шахта 1)
-const buyM1 = document.getElementById('buy-mining-1');
-if (buyM1) {
-    buyM1.onclick = () => {
-        if (score >= mining1Cost) {
-            score -= mining1Cost;
-            profitPerHour += 10;
-            mining1Cost = Math.floor(mining1Cost * 1.5);
-            updateUI();
-            saveData();
-            alert('Успешно куплено!');
-        } else {
-            alert('Недостаточно монет!');
-        }
-    };
+// Автосохранение каждые 10 секунд
+setInterval(() => {
+    if (playerName) saveGame();
+}, 10000);
+
+function tapMoney(event) {
+    if (hunger <= 0) { alert("Ты истощен! Срочно купи еды во вкладке Еда!"); return; }
+    balance += clickPower;
+    totalEarned += clickPower;
+    updateUI();
+    
+    if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+
+    const el = document.createElement('div');
+    el.className = 'floating-number';
+    el.innerText = '+' + clickPower;
+    const rect = event.currentTarget.getBoundingClientRect();
+    el.style.left = (event.clientX - rect.left) + 'px';
+    el.style.top = (event.clientY - rect.top) + 'px';
+    event.currentTarget.appendChild(el);
+    setTimeout(() => el.remove(), 700);
 }
 
-// Покупка Лазерного завода (Шахта 2)
-const buyM2 = document.getElementById('buy-mining-2');
-if (buyM2) {
-    buyM2.onclick = () => {
-        if (score >=
-
-
-mining2Cost) {
-            score -= mining2Cost;
-            profitPerHour += 100;
-            mining2Cost = Math.floor(mining2Cost * 1.5);
-            updateUI();
-            saveData();
-            alert('Успешно куплено!');
-        } else {
-            alert('Недостаточно монет!');
-        }
-    };
+function buyFood(cost, restore) {
+    if (balance < cost) { alert("Не хватает рублей!"); return; }
+    if (hunger >= 100) { alert("Ты уже полностью сыт!"); return; }
+    balance -= cost;
+    hunger = Math.min(100, hunger + restore);
+    saveGame();
+    updateUI();
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
 }
 
-// Переключение вкладок для нового меню из 5 кнопок
-const navButtons = document.querySelectorAll('.nav-btn');
-navButtons.forEach(btn => {
-    btn.onclick = () => {
-        navButtons.forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        
-        btn.classList.add('active');
-        const targetId = btn.getAttribute('data-target');
-        const targetScreen = document.getElementById(targetId);
-        if (targetScreen) {
-            targetScreen.classList.add('active');
-        }
-    };
-});
+function buyUpgrade(type) {
+    let baseCost = 50, boost = 1;
+    if (type === 'shawarma') { baseCost = 500; boost = 10; }
+    if (type === 'factory') { baseCost = 10000; boost = 250; }
+    if (type === 'oil') { baseCost = 250000; boost = 5000; }
+    if (type === 'it') { baseCost = 2000000; boost = 40000; }
+    if (type === 'space') { baseCost = 15000000; boost = 300000; }
 
-updateUI();
+    let cost = getCost(baseCost, upgrades[type]);
+    if (balance < cost) { alert("Не хватает рублей для покупки!"); return; }
+
+    balance -= cost;
+    upgrades[type]++;
+
+    if (type === 'hat') { 
+        clickPower += 1; 
+    } else { 
+        passiveIncome += boost; 
+    }
+
+    saveGame();
+    updateUI();
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+}
+
+function buyDonate(type) {
+    if (type === 'boost') {
+        if (crystals < 50) { alert("Нужно 50 кристаллов!"); return; }
+        crystals -= 50;
+        clickPower *= 2;
+        passiveIncome *= 2;
+        alert("Буст активирован! Доход и клики удвоены.");
+    } else if (type === 'money') {
+        if (crystals < 100) { alert("Нужно 100 кристаллов!"); return; }
+        crystals -= 100;
+        let pack = passiveIncome * 86400 * 3;
+        if (pack === 0) pack = 5000;
+        balance += pack;
+        totalEarned += pack;
+    }
+    saveGame();
+    updateUI();
+    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+}
