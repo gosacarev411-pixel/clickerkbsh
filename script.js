@@ -1,8 +1,11 @@
 let score = 0;
 let maxEnergy = 1000;
 let energy = 1000;
-let profitPerClick = 1;
-let energyCost = 1;
+let profitPerClick = 0.1; // Монета увеличивается на 0.1 за клик
+let energyCost = 1;      // Энергия тратится по 1 за клик
+
+// Время полного восстановления в миллисекундах (30 минут = 30 * 60 * 1000 = 1800000 мс)
+const regenerationTimeMs = 30 * 60 * 1000; 
 
 const scoreEl = document.getElementById('score');
 const coinEl = document.getElementById('coin');
@@ -20,18 +23,20 @@ coinEl.addEventListener('click', (e) => {
     }
 });
 
-// Автовосстановление энергии (5 ед. в секунду)
+// Восстановление энергии каждую секунду (полное восстановление за 30 минут)
+const energyPerSecond = maxEnergy / (regenerationTimeMs / 1000);
+
 setInterval(() => {
     if (energy < maxEnergy) {
-        energy = Math.min(maxEnergy, energy + 5);
+        energy = Math.min(maxEnergy, energy + energyPerSecond);
         updateUI();
     }
 }, 1000);
 
 // Обновление интерфейса
 function updateUI() {
-    scoreEl.textContent = score.toFixed(1);
-    energyTextEl.textContent = `${energy} / ${maxEnergy}`;
+    scoreEl.textContent = score.toFixed(1); // Красивый вывод с одним знаком после запятой
+    energyTextEl.textContent = `${Math.floor(energy)} / ${maxEnergy}`;
     const energyPercent = (energy / maxEnergy) * 100;
     energyProgressEl.style.width = `${energyPercent}%`;
 }
@@ -68,4 +73,5 @@ buyBoostBtn.addEventListener('click', () => {
         alert('Запрос на оплату отправлен!');
     } else {
         alert('Покупка доступна только внутри приложения Telegram.');
-    });
+    }
+});
