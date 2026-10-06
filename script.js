@@ -1,135 +1,4 @@
-let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
-let maxEnergy = 500;
-let profitPerClick = 0.0001;
-let energyCost = 1;
-
-let isRegenerating = localStorage.getItem('hamster_isRegenerating') === 'true';
-let energy = localStorage.getItem('hamster_energy') !== null ? parseFloat(localStorage.getItem('hamster_energy')) : 500;
-
-let regenerationTimeLeft = 30 * 60;
-let timerInterval = null;
-
-const TOTAL_REGEN_TIME = 30 * 60;
-
-let savedEndTime = localStorage.getItem('hamster_endTime');
-if (isRegenerating && savedEndTime) {
-    let currentTime = Math.floor(Date.now() / 1000);
-    let timeLeft = parseInt(savedEndTime) - currentTime;
-
-    if (timeLeft <= 0) {
-        energy = maxEnergy;
-        isRegenerating = false;
-        localStorage.removeItem('hamster_endTime');
-    } else {
-        regenerationTimeLeft = timeLeft;
-        energy = 0;
-    }
-}
-
-const scoreEl = document.getElementById('score');
-const coinEl = document.getElementById('coin');
-const energyTextEl = document.getElementById('energy-text');
-const energyProgressEl = document.getElementById('energy-progress');
-const buyBoostBtn = document.getElementById('buy-boost-btn');
-
-let timerDisplayEl = document.getElementById('regeneration-timer');
-if (!timerDisplayEl) {
-    timerDisplayEl = document.createElement('div');
-    timerDisplayEl.id = 'regeneration-timer';
-    timerDisplayEl.style.color = '#ff4757';
-    timerDisplayEl.style.fontSize = '18px';
-    timerDisplayEl.style.fontWeight = 'bold';
-    timerDisplayEl.style.marginTop = '10px';
-    timerDisplayEl.style.textAlign = 'center';
-    energyTextEl.parentNode.appendChild(timerDisplayEl);
-}
-
-function saveGameData() {
-    localStorage.setItem('hamster_score', score);
-    localStorage.setItem('hamster_energy', energy);
-    localStorage.setItem('hamster_isRegenerating', isRegenerating);
-}
-
-if (isRegenerating) {
-    startRegenerationTimer(false);
-} else {
-    updateUI();
-}
-
-coinEl.addEventListener('click', (e) => {
-    if (!isRegenerating && energy >= energyCost) {
-        score += profitPerClick;
-        energy -= energyCost;
-        updateUI();
-        saveGameData();
-        createFloatingText(e.clientX, e.clientY, `+${profitPerClick}`);
-
-        if (energy < energyCost) {
-            energy = 0;
-            startRegenerationTimer(true);
-        }
-    }
-});
-
-function startRegenerationTimer(createNew = true) {
-    isRegenerating = true;
-    
-    if (createNew) {
-        regenerationTimeLeft = TOTAL_REGEN_TIME;
-        let endTime = Math.floor(Date.now() / 1000) + TOTAL_REGEN_TIME;
-        localStorage.setItem('hamster_endTime', endTime);
-    }
-    
-    updateUI();
-    saveGameData();
-
-    if (timerInterval) clearInterval(timerInterval);
-
-    timerInterval = setInterval(() => {
-        let savedEndTime = localStorage.getItem('hamster_endTime');
-        if (savedEndTime) {
-            let currentTime = Math.floor(Date.now() / 1000);
-            regenerationTimeLeft = parseInt(savedEndTime) - currentTime;
-        } else {
-            regenerationTimeLeft--;
-        }
-
-        updateUI();
-
-        if (regenerationTimeLeft <= 0) {
-            clearInterval(timerInterval);
-            energy = maxEnergy;
-            isRegenerating = false;
-            regenerationTimeLeft = TOTAL_REGEN_TIME;
-            localStorage.removeItem('hamster_endTime');
-            updateUI();
-            saveGameData();
-        }
-    }, 1000);
-}
-
-function updateUI() {
-    scoreEl.textContent = score.toFixed(4);
-    energyTextEl.textContent = `${Math.floor(energy)} / ${maxEnergy}`;
-    const energyPercent = (energy / maxEnergy) * 100;
-    energyProgressEl.style.width = `${energyPercent}%`;
-
-    if (isRegenerating) {
-        if (regenerationTimeLeft < 0) regenerationTimeLeft = 0;
-        const minutes = Math.floor(regenerationTimeLeft / 60);
-        const seconds = regenerationTimeLeft % 60;
-        const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        timerDisplayEl.textContent = `Восста
-
-
-новление энергии: ${formattedTime}`;
-        timerDisplayEl.style.display = 'block';
-    } else {
-        timerDisplayEl.style.display = 'none';
-    }
-}
-
-function createFloatingText(x, y, text) {
+Text(x, y, text) {
     const el = document.createElement('div');
     el.textContent = text;
     el.style.position = 'absolute';
@@ -161,3 +30,48 @@ buyBoostBtn.addEventListener('click', () => {
         alert('Покупка доступна только внутри приложения Telegram.');
     }
 });
+
+// Анимация падающей матрицы на заднем плане
+const canvas = document.getElementById('matrix-canvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+const characters = '0123456789ABCDEFGHJKLMNOPQRSTUVWXYZ<>';
+const fontSize = 16;
+let columns = Math.floor(canvas.width / fontSize);
+
+let drops = [];
+for (let i = 0; i < columns; i++) {
+    drops[i] = 1;
+}
+
+function drawMatrix() {
+    ctx.fillStyle = 'rgba(5, 5, 5, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#00ff66';
+    ctx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < drops.length; i++) {
+        const text = characters.charAt(Math.floor(Math.random() * characters.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+        }
+        drops[i]++;
+    }
+}
+
+setInterval(drawMatrix, 33);
+
+
+
+
+
