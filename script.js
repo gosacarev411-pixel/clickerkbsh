@@ -1,8 +1,8 @@
 let score = 0;
 let maxEnergy = 1000;
 let energy = 1000;
-let profitPerClick = 0.1; // 0.1 монеты за клик
-let energyCost = 1;      // 1 энергия за клик
+let profitPerClick = 1;
+let energyCost = 1;
 
 const scoreEl = document.getElementById('score');
 const coinEl = document.getElementById('coin');
@@ -16,7 +16,7 @@ coinEl.addEventListener('click', (e) => {
         score += profitPerClick;
         energy -= energyCost;
         updateUI();
-       createFloatingText(e.clientX, e.clientY, `+${profitPerClick}`);
+        createFloatingText(e.clientX, e.clientY, `+${profitPerClick}`);
     }
 });
 
@@ -31,9 +31,9 @@ setInterval(() => {
 // Обновление интерфейса
 function updateUI() {
     scoreEl.textContent = score.toFixed(1);
-    energyTextEl.textContent = ${energy} / ${maxEnergy};
+    energyTextEl.textContent = `${energy} / ${maxEnergy}`;
     const energyPercent = (energy / maxEnergy) * 100;
-    energyProgressEl.style.width = ${energyPercent}%;
+    energyProgressEl.style.width = `${energyPercent}%`;
 }
 
 // Анимация всплывающего плюсика
@@ -41,33 +41,32 @@ function createFloatingText(x, y, text) {
     const el = document.createElement('div');
     el.textContent = text;
     el.style.position = 'absolute';
-    el.style.left = ${x}px;
-    el.style.top = ${y}px;
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
     el.style.color = '#fff';
     el.style.fontSize = '24px';
     el.style.fontWeight = 'bold';
     el.style.pointerEvents = 'none';
     el.style.transition = 'all 0.6s ease-out';
     el.style.transform = 'translate(-50%, -50%)';
-    
+
     document.body.appendChild(el);
 
     setTimeout(() => {
-        el.style.top = ${y - 60}px;
+        el.style.top = `${y - 60}px`;
         el.style.opacity = '0';
-    }, 10);
+    }, 20);
 
     setTimeout(() => {
         el.remove();
-    }, 600);
+    }, 680);
 }
 
-// Обработка нажатия на кнопку покупки бонуса за реальные деньги
+// Обработка нажатия на кнопку покупки бонуса
 buyBoostBtn.addEventListener('click', () => {
-    // Проверяем, запущен ли миниапп внутри Telegram
     if (window.Telegram && window.Telegram.WebApp) {
-        alert('Запрос на оплату отправлен! (Интеграция с Telegram Payments активируется через вашего бота в BotFather)');
+        alert('Запрос на оплату отправлен!');
     } else {
-        alert('Покупка доступна только внутри приложения Telegram!');
+        alert('Покупка доступна только внутри приложения Telegram.');
     }
 });
