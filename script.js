@@ -16,7 +16,7 @@ coinEl.addEventListener('click', (e) => {
         score += profitPerClick;
         energy -= energyCost;
         updateUI();
-        createFloatingText(e.clientX, e.clientY, +${profitPerClick});
+        createFloatingText(e.clientX, e.clientY, `+${profitPerClick}`);
     }
 });
 
