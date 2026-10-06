@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bottle Combat</title>
-    <!-- Версия v=5 для сброса кэша в Telegram -->
-    <link rel="stylesheet" href="style.css?v=5">
+    <!-- Версия v=7 для принудительного обновления кэша в Telegram -->
+    <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 
-    <!-- Главная вкладка (Тапалка) -->
+    <!-- Вкладка 1: Exchange (Главная / Тапалка) -->
     <div id="home-screen" class="screen active">
         <div class="user-box">
             <span class="user-avatar">🍾</span>
-            <span id="player-name">Игрок</span>
+            <span id="player-name">Игрок (CEO)</span>
         </div>
 
         <div class="stats-row">
@@ -54,8 +54,8 @@
         </div>
     </div>
 
-    <!-- Вкладка Шахты -->
-    <div id="mine-screen" class="screen">
+    <!-- Вкладка 2: Playground (Шахты / Игры) -->
+    <div id="playground-screen" class="screen">
         <div class="top-sec">
             <h2>Шахты</h2>
             <p>Прокачивайте пассивный доход</p>
@@ -74,7 +74,19 @@
         </div>
     </div>
 
-    <!-- Вкладка Друзья -->
+    <!-- Вкладка 3: AirDrop -->
+    <div id="airdrop-screen" class="screen">
+        <div class="top-sec">
+            <h2>AirDrop</h2>
+            <p>Скоро здесь появятся награды</p>
+        </div>
+        <div class="friend-box">
+            <h3>Листинг приближается</h3>
+            <p>Следите за обновлениями и готовьте свои монеты!</p>
+        </div>
+    </div>
+
+    <!-- Вкладка 4: Friends -->
     <div id="friends-screen" class="screen">
         <div class="top-sec">
             <h2>Друзья</h2>
@@ -87,11 +99,11 @@
         </div>
     </div>
 
-    <!-- Вкладка Магазин -->
+    <!-- Вкладка 5: Earn (Магазин / Заработок) -->
     <div id="shop-screen" class="screen">
         <div class="top-sec">
-            <h2>Магазин / Скины</h2>
-            <p>Измените внешний вид вашей бутылки</p>
+            <h2>Earn / Магазин</h2>
+            <p>Скины и улучшения</p>
         </div>
         <div class="cards-grid">
             <div class="market-card">
@@ -99,32 +111,17 @@
                 <p class="card-profit">Скоро доступно</p>
                 <div class="card-price">1000 🪙</div>
             </div>
-        </div>
+
+
+</div>
     </div>
 
-    <!-- Нижнее меню -->
+    <!-- Нижнее меню в стиле Hamster Kombat (5 кнопок) -->
     <div class="nav-bar">
         <button class="nav-btn active" data-target="home-screen">
-            <span class="nav-icon">🏠</span>
-            <span class="nav-text">Главная</span>
+            <span class="nav-icon">🐹</span>
+            <span class="nav-text">Exchange</span>
         </button>
-        <button class="nav-btn" data-target="mine-screen">
-            <span class="nav-icon">⛏</span>
-            <span class="nav-text">Шахты</span>
-        </button>
-        <button clas
-
-
-s="nav-btn" data-target="friends-screen">
-            <span class="nav-icon">👥</span>
-            <span class="nav-text">Друзья</span>
-        </button>
-        <button class="nav-btn" data-target="shop-screen">
-            <span class="nav-icon">🛒</span>
-            <span class="nav-text">Магазин</span>
-        </button>
-    </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+        <button class="nav-btn" data-target="playground-screen">
+            <span class="nav-icon">🎮</span>
+            <span class="nav-
