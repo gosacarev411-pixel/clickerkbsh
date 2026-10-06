@@ -259,8 +259,6 @@ function buyDonate(type) {
     saveGame();
     updateUI();
     if (tg && tg.HapticFeedback) {
-upgrades.it
-upgrades.it
-try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+        try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
     }
 }
