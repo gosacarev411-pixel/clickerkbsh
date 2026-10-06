@@ -261,8 +261,6 @@ function buyDonate(type) {
     if (tg && tg.HapticFeedback) {
 upgrades.it
 upgrades.it
-
-
 try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
     }
 }
