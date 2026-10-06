@@ -1,9 +1,9 @@
-// --- ИГРОВОЙ СКРИПТ С ИСПРАВЛЕННОЙ ВИДИМОСТЬЮ КЛИКОВ ---
+// --- ИГРОВОЙ СКРИПТ (ПРИРОСТ 0.00001 ЗА ТАП) ---
 
 let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
 let donateBalance = parseInt(localStorage.getItem('hamster_donate')) || 0;
 let maxEnergy = 500;
-let profitPerClick = parseFloat(localStorage.getItem('hamster_profit')) || 0.001; // Увеличили базовый клик для теста, можете изменить
+let profitPerClick = parseFloat(localStorage.getItem('hamster_profit')) || 0.00001; // Установили 0.00001 за тап
 let miningPower = parseFloat(localStorage.getItem('hamster_mining')) || 0;
 let energyCost = 1;
 
@@ -61,8 +61,8 @@ function saveGameData() {
 // ГЛАВНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ ИНТЕРФЕЙСА
 function updateUI() {
     if (scoreEl) {
-        // Динамическое отображение: если число большое, показываем меньше знаков, если нужно
-        scoreEl.textContent = score < 1 ? score.toFixed(4) : score.toFixed(2);
+        // Отображаем до 6 знаков после запятой, чтобы было отлично видно прирост
+        scoreEl.textContent = score.toFixed(6);
     }
     if (donateBalanceEl) donateBalanceEl.textContent = donateBalance;
     if (energyTextEl) energyTextEl.textContent = `${Math.floor(energy)} / ${maxEnergy}`;
@@ -75,10 +75,10 @@ function updateUI() {
             if (regenerationTimeLeft < 0) regenerationTimeLeft = 0;
             const minutes = Math.floor(regenerationTimeLeft / 60);
             const seconds = regenerationTimeLeft % 60;
-            timerDisplayEl.textC
+            timerDisplayEl.textContent = `Восстановление: ${minutes.toString().padStart(2, '0')}:${second
 
 
-ontent = `Восстановление: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+s.toString().padStart(2, '0')}`;
             timerDisplayEl.style.display = 'block';
         } else {
             timerDisplayEl.style.display = 'none';
@@ -168,7 +168,7 @@ function renderTopList() {
     fakePlayers.forEach((p, index) => {
         const item = document.createElement('div');
         item.className = 'top-item';
-        item.innerHTML = `<span>#${index + 1} ${p.name}</span> <span>${p.score.toFixed(2)} 🪙</span>`;
+        item.innerHTML = `<span>#${index + 1} ${p.name}</span> <span>${p.score.toFixed(4)} 🪙</span>`;
         container.appendChild(item);
     });
 }
@@ -194,20 +194,20 @@ if (isRegenerating) {
     updateUI();
 }
 
-// Клик по монете с анимацией нажатия и всплывающим текстом
+// Клик по монете с анимацией и всплывающим текстом
 if (coinEl) {
     coinEl.addEventListener('click', (e) => {
-        if (!isRegenerating && energy >=
-
-
-energyCost) {
+        if (!isRegenerating && energy >= energyCost) {
             score += profitPerClick;
-            energy -= energyCost;
+            energy -= energyCo
+
+
+st;
             updateUI();
             saveGameData();
             
-            // Всплывающий текст с плюсом
-            createFloatingText(e.clientX, e.clientY, `+${profitPerClick < 0.01 ? profitPerClick.toFixed(4) : profitPerClick.toFixed(2)}`);
+            // Всплывающий текст с точным приростом
+            createFloatingText(e.clientX, e.clientY, `+0.00001`);
 
             // Эффект уменьшения монеты при клике
             coinEl.style.transform = 'scale(0.9)';
@@ -275,7 +275,7 @@ function createFloatingText(x, y, text) {
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
     el.style.color = '#00cec9';
-    el.style.fontSize = '20px';
+    el.style.fontSize = '18px';
     el.style.fontWeight = 'bold';
     el.style.zIndex = '9999';
     el.style.pointerEvents = 'none';
@@ -296,7 +296,7 @@ if (buyClickBtn) {
     buyClickBtn.addEventListener('click', () => {
         if (score >= clickUpgradeCost) {
             score -= clickUpgradeCost;
-            profitPerClick += 0.001; // Увеличили прирост для наглядности
+            profitPerClick += 0.00001; // Увеличиваем клик на 0.00001 при покупке улучшения
             clickUpgradeCost *= 1.5;
             updateUI();
             saveGameData();
@@ -311,7 +311,7 @@ if (buyMiningBtn) {
     buyMiningBtn.addEventListener('click', () => {
         if (score >= miningUpgradeCost) {
             score -= miningUpgradeCost;
-            miningPower += 0.001;
+            miningPower += 0.00001;
             miningUpgradeCost *= 1.5;
             updateUI();
             saveGameData();
@@ -339,15 +339,15 @@ if (donate500) {
         updateUI();
         saveGameData();
         alert('Куплено 500 кристаллов 💎!');
-
-
-});
+    });
 }
 
 // Навигация
 document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+
+document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         btn.classList.add('active');
         const target = document.getElementById(btn.getAttribute('data-target'));
