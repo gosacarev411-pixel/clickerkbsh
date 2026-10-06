@@ -2,126 +2,521 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bottle Combat</title>
-    <!-- Версия v=7 для принудительного обновления кэша в Telegram -->
-    <link rel="stylesheet" href="style.css?v=7">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Путь бомжа к миллиардам</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f0f11;
+            --card-bg: #1a1a1e;
+            --accent-color: #f3c614;
+            --text-color: #ffffff;
+            --text-secondary: #8c8c94;
+            --danger-color: #ff4757;
+            --success-color: #2ed573;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+            padding-bottom: 90px;
+            text-align: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Окно регистрации */
+        #modal-reg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 320px;
+            border: 1px solid #2a2a32;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 12px;
+            border: 1px solid #3a3a45;
+            background: #2a2a32;
+            color: #fff;
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none;
+            text-align: center;
+        }
+
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 12px 18px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            border: 1px solid #2a2a32;
+        }
+
+        .balance-container {
+            font-size: 34px;
+            font-weight: 800;
+            color: var(--accent-color);
+            margin: 10px 0;
+        }
+
+        /* Экраны */
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Тапер */
+        .character-container {
+            position: relative;
+            display: inline-block;
+            margin: 15px 0;
+            cursor: pointer;
+        }
+        .character-avatar {
+            width: 130px;
+            height: 130px;
+            background: var(--card-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            box-shadow: 0 10px 30px rgba(243, 198, 20, 0.15);
+            border: 2px solid #2a2a32;
+            transition: transform 0.1s ease;
+        }
+        .character-container:active .character-avatar { transform: scale(0.92); }
+
+        .floating-number {
+            position: absolute;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-color);
+            pointer-events: none;
+            animation: floatUp 0.7s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-70px) scale(1.3); }
+        }
+
+        /* Карточки магазинов */
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-align: left;
+            color: var(--accent-color);
+        }
+        .shop-card {
+            background: var(--card-bg);
+            padding: 12px 14px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            d
+
+
+isplay: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #2a2a32;
+            text-align: left;
+        }
+        .shop-info h4 { margin: 0 0 3px 0; font-size: 14px; }
+        .shop-info p { margin: 0; font-size: 11px; color: var(--text-secondary); }
+
+        /* Кнопки */
+        button {
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 9px;
+            cursor: pointer;
+        }
+        button:active { opacity: 0.8; }
+        .btn-blue { background-color: #2481cc; color: white; }
+        .btn-full { width: 100%; padding: 12px; font-size: 16px; }
+
+        /* Навигация */
+        .nav-bar {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: #151518;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            border-top: 1px solid #2a2a32;
+            z-index: 1000;
+        }
+        .nav-item {
+            background: none; border: none;
+            color: var(--text-secondary);
+            font-size: 10px; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1;
+        }
+        .nav-item span { font-size: 16px; }
+        .nav-item.active { color: var(--accent-color); font-weight: bold; }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
 
-    <!-- Вкладка 1: Exchange (Главная / Тапалка) -->
-    <div id="home-screen" class="screen active">
-        <div class="user-box">
-            <span class="user-avatar">🍾</span>
-            <span id="player-name">Игрок (CEO)</span>
-        </div>
-
-        <div class="stats-row">
-            <div class="stat-card">
-                <span class="stat-title">Прибыль за тап</span>
-                <span class="stat-value" id="profit-per-click-val">+1</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-title">Прибыль в час</span>
-                <span class="stat-value" id="profit-per-hour-val">0 🪙</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-title">Энергия</span>
-                <span class="stat-value" id="energy-val">500/500</span>
-            </div>
-        </div>
-
-        <div class="score-container">
-            <span class="coin-big">🪙</span>
-            <h1 id="score">0</h1>
-        </div>
-
-        <div class="clicker-area">
-            <div id="coin" class="coin-wrapper">
-                <div class="coin-circle">
-                    <span class="coin-emoji">🍾</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="energy-bar-wrapper">
-            <div class="energy-text-info">
-                <span>⚡ <span id="energy-current">500</span> / <span id="energy-max">500</span></span>
-            </div>
-            <div class="energy-bar-bg">
-                <div id="energy-progress" class="energy-bar-fill"></div>
-            </div>
+    <!-- Регистрация -->
+    <div id="modal-reg">
+        <div class="modal-content">
+            <h2>🏙️ На дне города</h2>
+            <p style="font-size: 13px; color: var(--text-secondary);">Как тебя зовут, будущий олигарх?</p>
+            <input type="text" id="username-input" placeholder="Введи ник..." maxlength="15">
+            <button class="btn-full" onclick="saveName()">Начать путь</button>
         </div>
     </div>
 
-    <!-- Вкладка 2: Playground (Шахты / Игры) -->
-    <div id="playground-screen" class="screen">
-        <div class="top-sec">
-            <h2>Шахты</h2>
-            <p>Прокачивайте пассивный доход</p>
-        </div>
-        <div class="cards-grid">
-            <div class="market-card" id="buy-mining-1">
-                <h4>Космический бур</h4>
-                <p class="card-profit">+10 в час</p>
-                <div class="card-price" id="m1-price">50 🪙</div>
-            </div>
-            <div class="market-card" id="buy-mining-2">
-                <h4>Лазерный завод</h4>
-                <p class="card-profit">+100 в час</p>
-                <div class="card-price" id="m2-price">500 🪙</div>
-            </div>
+    <!-- Победное окно -->
+    <div id="win-modal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:3000; display:flex; justify-content:center; align-items:center;">
+        <div class="modal-content" style="text-align: center;">
+            <h1>🏆 ПОБЕДА!</h1>
+            <p>Ты прошел путь от бродяги до официального Миллиардера за полгода!</p>
+            <button class="btn-full" onclick="document.getElementById('win-modal').classList.add('hidden')">Продолжить империю</button>
         </div>
     </div>
 
-    <!-- Вкладка 3: AirDrop -->
-    <div id="airdrop-screen" class="screen">
-        <div class="top-sec">
-            <h2>AirDrop</h2>
-            <p>Скоро здесь появятся награды</p>
-        </div>
-        <div class="friend-box">
-            <h3>Листинг приближается</h3>
-            <p>Следите за обновлениями и готовьте свои монеты!</p>
-        </div>
-    </div>
+    <!-- Шапка -->
+    <div class="header">
+        <div>
+            <span id="player-name" style="font-weight: bold; font-size: 14px;">Бродяга</span>
 
-    <!-- Вкладка 4: Friends -->
-    <div id="friends-screen" class="screen">
-        <div class="top-sec">
-            <h2>Друзья</h2>
-            <p>Приглашайте рефералов за бонусы</p>
+            <span id="player-rank" style="color: var(--accent-color); font-size: 11px;">Бродяга</span>
         </div>
-        <div class="friend-box">
-            <h3>Пригласить друга</h3>
-            <p>Получите по 500 монет за каждого друга</p>
-            <button class="main-btn" onclick="alert('Реферальная ссылка скопирована!')">Пригласить друга</button>
+        <div style="background: #2a2a32; padding: 4px 10px; border-radius: 8px; font-size: 12px; color: var(--success-color);">
+            💎 <span id="crystals-count">5</span>
         </div>
     </div>
 
-    <!-- Вкладка 5: Earn (Магазин / Заработок) -->
-    <div id="shop-screen" class="screen">
-        <div class="top-sec">
-            <h2>Earn / Магазин</h2>
-            <p>Скины и улучшения</p>
+    <!-- 1. ИГРА -->
+    <div id="screen-game" class="screen active">
+        <div class="balance-container">
+            <span id="balance">0</span> ₽
         </div>
-        <div class="cards-grid">
-            <div class="market-card">
-                <h4>Золотая бутылка</h4>
-                <p class="card-profit">Скоро доступно</p>
-                <div class="card-price">1000 🪙</div>
-            </div>
+
+        <div style="width: 85%; max-width: 300px; margin: 0 auto 6px auto; background: #2a2a32; border-radius: 8px; overflow: hidden; height: 12px; border: 1px solid #3a3a45;">
+            <div id="hunger-bar" style="width: 100%; height: 100%; background: var(--success-color); transition: width 0.3s ease;"></div>
+        </div>
+        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 15px;">
+            Сытость: <span id="hunger-text">100</span>%
+        </div>
+
+        <div class="character-container" id="tap-target" onclick="tapMoney(event)">
+            <div class="character-avatar" id="avatar-icon">📦</div>
+        </div>
+
+        <div style="color: var(--text-secondary); font-size: 12px; margin-top: 10px; background: var(--card-bg); padding
 
 
-</div>
+: 8px 12px; border-radius: 12px; display: inline-block; border: 1px solid #2a2a32;">
+            ⚡ Доход: <span id="passive-income" style="color: var(--accent-color);">0</span> ₽/сек | Клик: +<span id="click-power-val" style="color: var(--accent-color);">1</span>
+        </div>
     </div>
 
-    <!-- Нижнее меню в стиле Hamster Kombat (5 кнопок) -->
+    <!-- 2. ЕДА -->
+    <div id="screen-food" class="screen">
+        <div class="section-title">🍔 Перекус</div>
+        <div class="shop-card">
+            <div class="shop-info"><h4>💧 Вода</h4><p>+10% сытости</p><b style="color: var(--accent-color);">5 ₽</b></div>
+            <button class="btn-blue" onclick="buyFood(5, 10)">Купить</button>
+        </div>
+        <div class="shop-card">
+            <div class="shop-info"><h4>🥖 Батон</h4><p>+30% сытости</p><b style="color: var(--accent-color);">20 ₽</b></div>
+            <button class="btn-blue" onclick="buyFood(20, 30)">Купить</button>
+        </div>
+        <div class="shop-card">
+            <div class="shop-info"><h4>🍜 Доширак</h4><p>+70% сытости</p><b style="color: var(--accent-color);">60 ₽</b></div>
+            <button class="btn-blue" onclick="buyFood(60, 70)">Купить</button>
+        </div>
+        <div class="shop-card">
+            <div class="shop-info"><h4>🌯 Шаурма</h4><p>100% сытости</p><b style="color: var(--accent-color);">150 ₽</b></div>
+            <button class="btn-blue" onclick="buyFood(150, 100)">Купить</button>
+        </div>
+    </div>
+
+    <!-- 3. МАГАЗИН И БИЗНЕС -->
+    <div id="screen-shop" class="screen">
+        <div class="section-title">🛒 Бизнес и прокачка (На 6 месяцев)</div>
+        <div class="shop-card">
+            <div class="shop-info"><h4>🧢 Теплая шапка</h4><p>Клик +1 ₽</p><b style="color: var(--accent-color);" id="price-hat">50 ₽</b></div>
+            <button onclick="buyUpgrade('hat')">Купить</button>
+        </div>
+        <div class="shop-card">
+            <div class="shop-info"><h4>🌭 Шаурмечная</h4><p>Доход +10 ₽/сек</p><b style="color: var(--accent-color);" id="price-shawarma">500 ₽</b></div>
+            <button onclick="buyUpgrade('shawarma')">Купить</button>
+        </div>
+        <div class="shop-card">
+            <div class="shop-info"><h4>🏭 Завод труб</h4><p>Доход +250 ₽/сек</p><b style="color: var(--accent-color);" id="price-factory">10,000 ₽</b></div>
+            <button onclick="buyUpgrade('factory')">Купить</button>
+        </div>
+        <div class="shop-card">
+            <div class="shop-info"><h4>🚀 Нефтяная компания</h4><p>Доход +5,000 ₽/сек</p><b style="color: var(--accent-color);" id="price-oil">250,000 ₽</b></div>
+            <button onclick="buyUpgrade('oil')">Купить</button>
+        </div>
+        <div class="shop-card">
+            <div class="shop-info"><h4>💻 IT-Корпорация</h4><p>Доход +40,000 ₽/сек</p><b style="color: var(--accent-color);" id="price-it">2,000,000 ₽</b></div>
+            <button onclick="buyUpgrade('it')">Купить</button>
+        </div>
+        <div class="shop-card">
+            <div class="shop-info"><h4>🛰️ Космический туризм</h4><p>Доход +300,000 ₽/сек</p><b style="color: var(--accent-color);" id="price-space">15,000,000 ₽</b></div>
+            <button onclick="buyUpgrade('space')">Купить</button>
+        </div>
+    </div>
+
+    <!-- 4. ДОНАТ -->
+    <div id="screen-donate" class="screen">
+        <div class="section-title">💎 Премиум-магазин</div>
+        <div class="shop-card" style="border: 2px solid gold;">
+            <div class="shop-info"><h4>⚡ Буст x3 дохода</h4><p>Умножает доход на 24 часа</p><b style="color: var(--accent-color);">50 💎</b></div>
+            <button onclick="buyDonate('boost')">Купить</button>
+        </div>
+        <div class="shop-card" style="border: 2px solid gold;">
+            <div class="shop-info"><h4>💰 Чемодан денег</h4><p>Мгновенно +7 дней пассива</p><b style="color: var(--accent-color);">100 💎</b></div>
+            <button onclick="buyDonate('money')">Купить</button>
+        </div>
+    </div>
+
+    <!-- 5. ДРУЗЬЯ -->
+    <div id="screen-friends" class="scree
+
+
+n">
+        <div class="section-title">👥 Друзья</div>
+        <div style="background: var(--card-bg); padding: 20px; border-radius: 16px; text-align: center; border: 1px solid #2a2a32;">
+            <p style="color: var(--text-secondary); font-size: 13px;">Приглашай друзей и получай кристаллы!</p>
+            <h2 style="color: var(--accent-color);">+10 кристаллов</h2>
+            <button class="btn-full btn-blue" onclick="alert('Реферальная ссылка скопирована!')">Пригласить друга</button>
+        </div>
+    </div>
+
+    <!-- Меню -->
     <div class="nav-bar">
-        <button class="nav-btn active" data-target="home-screen">
-            <span class="nav-icon">🐹</span>
-            <span class="nav-text">Exchange</span>
-        </button>
-        <button class="nav-btn" data-target="playground-screen">
-            <span class="nav-icon">🎮</span>
-            <span class="nav-
+        <button class="nav-item active" onclick="switchScreen('game', this)"><span>🏠</span>Игра</button>
+        <button class="nav-item" onclick="switchScreen('food', this)"><span>🍔</span>Еда</button>
+        <button class="nav-item" onclick="switchScreen('shop', this)"><span>🛒</span>Бизнес</button>
+        <button class="nav-item" onclick="switchScreen('donate', this)"><span>💎</span>Донат</button>
+        <button class="nav-item" onclick="switchScreen('friends', this)"><span>👥</span>Друзья</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        let playerName = localStorage.getItem('homeless_name') || '';
+        let balance = parseInt(localStorage.getItem('homeless_balance')) || 0;
+        let totalEarned = parseInt(localStorage.getItem('homeless_total')) || 0;
+        let crystals = parseInt(localStorage.getItem('homeless_crystals')) || 5;
+        let clickPower = parseInt(localStorage.getItem('homeless_click_power')) || 1;
+        let passiveIncome = parseInt(localStorage.getItem('homeless_passive')) || 0;
+        let hunger = parseInt(localStorage.getItem('homeless_hunger'));
+        if (isNaN(hunger)) hunger = 100;
+
+        let upgrades = {
+            hat: parseInt(localStorage.getItem('up_hat')) || 0,
+            shawarma: parseInt(localStorage.getItem('up_shawarma')) || 0,
+            factory: parseInt(localStorage.getItem('up_factory')) || 0,
+            oil: parseInt(localStorage.getItem('up_oil')) || 0,
+            it: parseInt(localStorage.getItem('up_it')) || 0,
+            space: parseInt(localStorage.getItem('up_space')) || 0
+        };
+
+        const ranks = [
+            { name: "Бродяга", threshold: 0, avatar: "📦" },
+            { name: "Работяга", threshold: 5000, avatar: "🧥" },
+            { name: "Стартапер", threshold: 100000, avatar: "💻" },
+            { name: "Бизнесмен", threshold: 2000000, avatar: "👔" },
+            { name: "Олигарх", threshold: 50000000, avatar: "🚗" },
+            { name: "🏆 Миллиардер", threshold: 1000000000, avatar: "🏝️" }
+        ];
+
+        window.onload = function() {
+            if (playerName) {
+                document.getElementById('modal-reg').classList.add('hidden');
+                updateUI();
+            }
+        };
+
+        function saveName() {
+            const name = document.getElementById('username-input').value.trim();
+            if (name.length < 2) { alert("Имя должно быть от 2 символов!"); return; }
+            playerName = name;
+            localStorage.setItem('homeless_name', playerName);
+            document.getElementById('modal-reg').classList.add('hidden');
+            updateUI();
+        }
+
+        function switchScreen(id, el) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById('screen-' + id).classList.add('active');
+            el.classList.add('active');
+        }
+
+        function getCost(base, count) {
+            return Math.floor(base * Math.pow(1.22, count));
+        }
+
+        function updateUI() {
+            document.getElementById('player-name').innerText = playerName;
+            document.getElementById('balance').innerText = balance.toLocaleString();
+            document.getElementById('crystals-count').innerText = crystals;
+            document.
+
+
+getElementById('passive-income').innerText = passiveIncome.toLocaleString();
+            document.getElementById('click-power-val').innerText = clickPower.toLocaleString();
+            
+            // Цены бизнесов
+            document.getElementById('price-hat').innerText = getCost(50, upgrades.hat).toLocaleString() + ' ₽';
+            document.getElementById('price-shawarma').innerText = getCost(500, upgrades.shawarma).toLocaleString() + ' ₽';
+            document.getElementById('price-factory').innerText = getCost(10000, upgrades.factory).toLocaleString() + ' ₽';
+            document.getElementById('price-oil').innerText = getCost(250000, upgrades.oil).toLocaleString() + ' ₽';
+            document.getElementById('price-it').innerText = getCost(2000000, upgrades.it).toLocaleString() + ' ₽';
+            document.getElementById('price-space').innerText = getCost(15000000, upgrades.space).toLocaleString() + ' ₽';
+
+            updateHungerUI();
+            checkRank();
+        }
+
+        function updateHungerUI() {
+            document.getElementById('hunger-bar').style.width = hunger + '%';
+            document.getElementById('hunger-text').innerText = hunger;
+            const bar = document.getElementById('hunger-bar');
+            bar.style.backgroundColor = hunger > 50 ? 'var(--success-color)' : (hunger > 20 ? '#ffa502' : 'var(--danger-color)');
+        }
+
+        function checkRank() {
+            for (let i = ranks.length - 1; i >= 0; i--) {
+                if (totalEarned >= ranks[i].threshold) {
+                    document.getElementById('player-rank').innerText = ranks[i].name;
+                    document.getElementById('avatar-icon').innerText = ranks[i].avatar;
+                    if (i === ranks.length - 1 && totalEarned >= 1000000000) {
+                        document.getElementById('win-modal').classList.remove('hidden');
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Таймер пассивного дохода и голода (каждую секунду)
+        setInterval(() => {
+            if (!playerName) return;
+            if (hunger > 0) {
+                hunger = Math.max(0, hunger - 1);
+                localStorage.setItem('homeless_hunger', hunger);
+                updateHungerUI();
+            }
+            if (passiveIncome > 0 && hunger > 0) {
+                balance += passiveIncome;
+                totalEarned += passiveIncome;
+                localStorage.setItem('homeless_balance', balance);
+                localStorage.setItem('homeless_total', totalEarned);
+                updateUI();
+            }
+        }, 1000);
+
+        function tapMoney(event) {
+            if (hunger <= 0) { alert("Ты истощен! Срочно купи еды во вкладке Еда!"); return; }
+            balance += clickPower;
+            totalEarned += clickPower;
+            localStorage.setItem('homeless_balance', balance);
+            localStorage.setItem('homeless_total', totalEarned);
+            updateUI();
+            
+            // Анимация клика
+            const el = document.createElement('div');
+            el.className = 'floating-number';
+            el.innerText = '+' + clickPower;
+            const rect = event.currentTarget.getBoundingClientRect();
+            el.style.left = (event.clientX - rect.left) + 'px';
+            el.style.top = (event.clientY - rect.top) + 'px';
+            event.currentTarget.appendChild(el);
+            setTimeout(() => el.remove(), 700);
+        }
+
+        function buyFood(cost, restore) {
+            if (balance < cost) { alert("Не хватает рублей!"); return; }
+            if (hunger >= 100) { alert("Ты уже полностью сыт!"); return; }
+            balance -= cost;
+            hunger = Math.min(100, hunger + restore);
+            localStorage.setItem('homeless_balance', balance);
+            localStorage.setItem('homeless_hunger', hunger);
+            updateUI();
+        }
+
+        function buyUpgrade(type) {
+            let baseCost = 50, boost = 1;
+            if (type ===
+
+
+'shawarma') { baseCost = 500; boost = 10; }
+            if (type === 'factory') { baseCost = 10000; boost = 250; }
+            if (type === 'oil') { baseCost = 250000; boost = 5000; }
+            if (type === 'it') { baseCost = 2000000; boost = 40000; }
+            if (type === 'space') { baseCost = 15000000; boost = 300000; }
+
+            let cost = getCost(baseCost, upgrades[type]);
+            if (balance < cost) { alert("Не хватает рублей для покупки!"); return; }
+
+            balance -= cost;
+            upgrades[type]++;
+            localStorage.setItem('homeless_balance', balance);
+            localStorage.setItem('up_' + type, upgrades[type]);
+
+            if (type === 'hat') { 
+                clickPower += 1; 
+                localStorage.setItem('homeless_click_power', clickPower); 
+            } else { 
+                passiveIncome += boost; 
+                localStorage.setItem('homeless_passive', passiveIncome); 
+            }
+
+            updateUI();
+        }
+
+        function buyDonate(type) {
+            if (type === 'boost') {
+                if (crystals < 50) { alert("Нужно 50 кристаллов!"); return; }
+                crystals -= 50;
+                clickPower *= 2;
+                passiveIncome *= 2;
+                alert("Буст активирован! Доход и клики удвоены.");
+            } else if (type === 'money') {
+                if (crystals < 100) { alert("Нужно 100 кристаллов!"); return; }
+                crystals -= 100;
+                let pack = passiveIncome * 86400 * 3; // 3 дня пассива мгновенно
+                if (pack === 0) pack = 5000;
+                balance += pack;
+                totalEarned += pack;
+            }
+            localStorage.setItem('homeless_crystals', crystals);
+            updateUI();
+        }
+    </script>
+</body>
+</html>
