@@ -1,4 +1,3 @@
-// Основные игровые переменные
 let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
 let donateBalance = parseInt(localStorage.getItem('hamster_donate')) || 0;
 let maxEnergy = 500;
@@ -9,7 +8,6 @@ let energyCost = 1;
 let clickUpgradeCost = parseFloat(localStorage.getItem('hamster_click_cost')) || 1.0;
 let miningUpgradeCost = parseFloat(localStorage.getItem('hamster_mining_cost')) || 5.0;
 
-// Скины (6 штук)
 const skinsData = [
     { id: 0, name: 'Классическая', price: 0, img: '', icon: '🍾' },
     { id: 1, name: 'Золотая бутылка', price: 50, img: 'https://cdn-icons-png.flaticon.com/512/3081/3081559.png' },
@@ -29,12 +27,10 @@ let regenerationTimeLeft = 30 * 60;
 let timerInterval = null;
 const TOTAL_REGEN_TIME = 30 * 60;
 
-// Фоновый таймер
 let savedEndTime = localStorage.getItem('hamster_endTime');
 if (isRegenerating && savedEndTime) {
     let currentTime = Math.floor(Date.now() / 1000);
     let timeLeft = parseInt(savedEndTime) - currentTime;
-
     if (timeLeft <= 0) {
         energy = maxEnergy;
         isRegenerating = false;
@@ -45,7 +41,6 @@ if (isRegenerating && savedEndTime) {
     }
 }
 
-// DOM элементы
 const scoreEl = document.getElementById('score');
 const donateBalanceEl = document.getElementById('donate-balance');
 const coinEl = document.getElementById('coin');
@@ -80,7 +75,6 @@ if (isRegenerating) {
     updateUI();
 }
 
-// Клик по монете
 coinEl.addEventListener('click', (e) => {
     if (!isRegenerating && energy >= energyCost) {
         score += profitPerClick;
@@ -91,24 +85,22 @@ coinEl.addEventListener('click', (e) => {
 
         if (energy < energyCost) {
             energy = 0;
-            start
-
-
-RegenerationTimer(true);
+            startRegenerationTimer(true);
         }
     }
 });
 
-// Пассивный майнинг каждую секунду
 setInterval(() => {
     if (miningPower > 0) {
-        score += miningPower;
+        s
+
+
+core += miningPower;
         updateUI();
         saveGameData();
     }
 }, 1000);
 
-// Таймер восстановления энергии
 function startRegenerationTimer(createNew = true) {
     isRegenerating = true;
     if (createNew) {
@@ -144,7 +136,6 @@ function startRegenerationTimer(createNew = true) {
     }, 1000);
 }
 
-// Обновление интерфейса
 function updateUI() {
     scoreEl.textContent = score.toFixed(8);
     donateBalanceEl.textContent = donateBalance;
@@ -156,8 +147,7 @@ function updateUI() {
         if (regenerationTimeLeft < 0) regenerationTimeLeft = 0;
         const minutes = Math.floor(regenerationTimeLeft / 60);
         const seconds = regenerationTimeLeft % 60;
-        const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        timerDisplayEl.textContent = `Восстановление: ${formattedTime}`;
+        timerDisplayEl.textContent = `Восстановление: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         timerDisplayEl.style.display = 'block';
     } else {
         timerDisplayEl.style.display = 'none';
@@ -182,7 +172,6 @@ function updateSkinDisplay() {
     }
 }
 
-// Анимация текста при клике
 function createFloatingText(x, y, text) {
     const el = document.createElement('div');
     el.textContent = text;
@@ -204,7 +193,6 @@ function createFloatingText(x, y, text) {
     setTimeout(() => el.remove(), 650);
 }
 
-// Магазин улучшений
 document.getElementById('buy-click-upgrade').addEventListener('click', () => {
     if (score >= clickUpgradeCost) {
         score -= clickUpgradeCost;
@@ -229,18 +217,16 @@ document.getElementById('buy-mining-upgrade').addEventListener('click', () => {
     }
 });
 
-f
-
-
-
-unction updateShopUI() {
+function updateShopUI() {
     document.getElementById('upgrade-click-cost').textContent = `Цена: ${clickUpgradeCost.toFixed(2)} 🪙`;
     document.getElementById('upgrade-mining-cost').textContent = `Цена: ${miningUpgradeCost.toFixed(2)} 🪙`;
 }
 
-// Рендер скинов
 function renderSkins() {
-    const container = document.getElementById('skins-container');
+    const container = docum
+
+
+ent.getElementById('skins-container');
     container.innerHTML = '';
 
     skinsData.forEach(skin => {
@@ -270,7 +256,7 @@ function renderSkins() {
                     updateUI();
                     saveGameData();
                 } else {
-                    alert('Недостаточно кристаллов 💎 в кошельке!');
+                    alert('Недостаточно кристаллов 💎!');
                 }
             }
         });
@@ -279,32 +265,28 @@ function renderSkins() {
     });
 }
 
-// Донат кнопки
 document.getElementById('donate-100-btn').addEventListener('click', () => {
     donateBalance += 100;
     updateUI();
     saveGameData();
-    alert('Успешно куплено 100 кристаллов 💎!');
+    alert('Куплено 100 кристаллов 💎!');
 });
 
 document.getElementById('donate-500-btn').addEventListener('click', () => {
     donateBalance += 500;
     updateUI();
     saveGameData();
-    alert('Успешно куплено 500 кристаллов 💎!');
+    alert('Куплено 500 кристаллов 💎!');
 });
 
-// Топ игроков
 function renderTopList() {
     const container = document.getElementById('top-list-container');
     const fakePlayers = [
         { name: 'CryptoKing', score: 12.5 },
         { name: 'Satoshi_N', score: 8.2 },
         { name: 'TelegramUser', score: 5.1 },
-        { name: 'BottleMaster', score: 3.4 },
         { name: 'Вы (Игрок)', score: score }
     ];
-
     fakePlayers.sort((a, b) => b.score - a.score);
 
     container.innerHTML = '';
@@ -316,24 +298,17 @@ function renderTopList() {
     });
 }
 
-// Переключение экранов по нижнему меню
-const navButtons = document.querySelectorAll('.nav-btn');
-const screens = document.querySelectorAll('.screen');
-
-navButtons.forEach(btn => {
+document.querySelectorAll('.nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        navButtons.forEach(b => b.classList.remove('active'));
-        screens.forEach(s => s.classList.remove('active'));
-
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(btn.getAttribute('data-target')).classList.add('active');
     });
 });
 
-// Динамический космический фон (звезды)
 const canvas = document.getElementById('space-canvas');
 const ctx = canvas.getContext('2d');
-
 function resizeCanvas() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -341,36 +316,25 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-let stars = [];
-for (let i = 0; i < 100; i++) {
-    stars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 2,
-        speed: Math.random() * 0.5 + 0.1
-    });
-}
+let stars = Array.from({ length: 100 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    size: Math.random() * 2,
+    speed: Math.random() * 0.5 + 0.1
+}));
 
 function drawSpace() {
     ctx.fillStyle = '#0b091a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     ctx.fillStyle = '#ffffff';
     stars.forEach(star => {
-        ctx.
-confer.biz - Confer Business Names (Naming Agency)
-skin.name
-
-
-globalAlpha = Math.random() * 0.8 + 0.2;
+        ctx.globalAlpha = Math.random() * 0.8 + 0.2;
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fill();
-
         star.y += star.speed;
         if (star.y > canvas.height) star.y = 0;
     });
-
     requestAnimationFrame(drawSpace);
 }
 drawSpace();
