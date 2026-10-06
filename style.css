@@ -173,45 +173,61 @@ body {
     transition: width 0.1s linear;
 }
 
-/* Нижнее меню */
+/* Нижнее меню в стиле Hamster */
 .nav-bar {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 65px;
-    background-color: #18181c;
+    height: 70px;
+    background-color: #16161a;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 .nav-btn {
     background: none;
     border: none;
-    color: #747d8c;
-    font-size: 11px;
-    font-weight: 600;
+    color: #8c8f9c;
+    font-size: 10px;
+    font-weight: 500;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    justify-content: center;
+    gap: 4px;
     flex: 1;
+    height: 100%;
+    transition: color 0.2s ease;
 }
 
 .nav-icon {
-    font-size: 18px;
+    font-size: 20px;
+}
+
+.nav-text {
+    font-size: 10px;
 }
 
 .nav-btn.active {
-    color: #ffa502;
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.nav-btn.active .nav-icon {
+    filter: drop-shadow(0 0 6px rgba(255, 165, 2, 0.5));
 }
 
 /* Экраны */
-.top-sec {
+.top-
+
+
+sec {
     margin-bottom: 15px;
 }
 
@@ -234,10 +250,7 @@ body {
 .market-card {
     background: #1e1e24;
     padding: 12px 16px;
-    border-radiu
-
-
-s: 12px;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     gap: 4px;
