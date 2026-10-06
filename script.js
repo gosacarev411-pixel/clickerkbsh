@@ -1,7 +1,7 @@
 let score = 0;
-let maxEnergy = 1000;
-let energy = 1000;
-let profitPerClick = 0.5;
+let maxEnergy = 500;
+let energy = 500;
+let profitPerClick = 0.1;
 let energyCost = 1;
 
 let isRegenerating = false;
