@@ -1,4 +1,4 @@
-// --- ИГРОВОЙ СКРИПТ (ИСПРАВЛЕНА ОШИБКА СИНТАКСИСА) ---
+// --- ИГРОВОЙ СКРИПТ (ПОЛНОСТЬЮ ИСПРАВЛЕННЫЙ) ---
 
 let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
 let donateBalance = parseInt(localStorage.getItem('hamster_donate')) || 0;
@@ -58,29 +58,28 @@ function saveGameData() {
     localStorage.setItem('hamster_current_skin', currentSkinId);
 }
 
-// ГЛАВНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ ИНТЕРФЕЙСА
 function updateUI() {
     if (scoreEl) {
         scoreEl.textContent = score.toFixed(6);
     }
     if (donateBalanceEl) donateBalanceEl.textContent = donateBalance;
-    if (energyTextEl) energyTextEl.textContent = `${Math.floor(energy)} / ${maxEnergy}`;
+    if (energyTextEl) energyTextEl.textContent = Math.floor(energy) + ' / ' + maxEnergy;
     
     const energyPercent = (energy / maxEnergy) * 100;
-    if (energyProgressEl) energyProgressEl.style.width = `${energyPercent}%`;
+    if (energyProgressEl) energyProgressEl.style.width = energyPercent + '%';
 
     if (timerDisplayEl) {
         if (isRegenerating) {
             if (regenerationTimeLeft < 0) regenerationTimeLeft = 0;
             const minutes = Math.floor(regenerationTimeLeft / 60);
             const seconds = regenerationTimeLeft % 60;
-            timerDisplayEl.textContent = `Восстановление: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            timerDisplayEl.textContent = 'Восстановление: ' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
             timerDisplayEl.style.display = 'block';
         } else {
+            timerDisplayEl.style.display = 'none';
 
 
-timerDisplayEl.style.display = 'none';
-        }
+}
     }
 
     updateSkinDisplay();
@@ -106,8 +105,8 @@ function updateSkinDisplay() {
 function updateShopUI() {
     const clickCostEl = document.getElementById('upgrade-click-cost');
     const miningCostEl = document.getElementById('upgrade-mining-cost');
-    if (clickCostEl) clickCostEl.textContent = `Цена: ${clickUpgradeCost.toFixed(2)} 🪙`;
-    if (miningCostEl) miningCostEl.textContent = `Цена: ${miningUpgradeCost.toFixed(2)} 🪙`;
+    if (clickCostEl) clickCostEl.textContent = 'Цена: ' + clickUpgradeCost.toFixed(2) + ' 🪙';
+    if (miningCostEl) miningCostEl.textContent = 'Цена: ' + miningUpgradeCost.toFixed(2) + ' 🪙';
 }
 
 function renderSkins() {
@@ -128,11 +127,10 @@ function renderSkins() {
 
         const card = document.createElement('div');
         card.className = 'skin-card';
-        card.innerHTML = `
-            <img src="${skin.img || 'https://cdn-icons-png.flaticon.com/512/2738/2738245.png'}" alt="${skin.name}">
-            <h4>${skin.name}</h4>
-            <button class="skin-action-btn ${isEquipped ? 'equipped' : ''}">${btnText}</button>
-        `;
+        card.innerHTML = 
+            '<img src="' + (skin.img || 'https://cdn-icons-png.flaticon.com/512/2738/2738245.png') + '" alt="' + skin.name + '">' +
+            '<h4>' + skin.name + '</h4>' +
+            '<button class="skin-action-btn ' + (isEquipped ? 'equipped' : '') + '">' + btnText + '</button>';
 
         card.querySelector('button').addEventListener('click', () => {
             if (isOwned) {
@@ -171,7 +169,7 @@ function renderTopList() {
     fakePlayers.forEach((p, index) => {
         const item = document.createElement('div');
         item.className = 'top-item';
-        item.innerHTML = `<span>#${index + 1} ${p.name}</span> <span>${p.score.toFixed(6)} 🪙</span>`;
+        item.innerHTML = '<span>#' + (index + 1) + ' ' + p.name + '</span> <span>' + p.score.toFixed(6) + ' 🪙</span>';
         container.appendChild(item);
     });
 }
@@ -204,10 +202,10 @@ if (coinEl) {
             updateUI();
             saveGameData();
             
-            createFloatingText(e.c
+            createFloatingT
 
 
-lientX, e.clientY, `+0.000001`);
+ext(e.clientX, e.clientY, '+0.000001');
 
             coinEl.style.transform = 'scale(0.9)';
             setTimeout(() => {
@@ -269,8 +267,8 @@ function createFloatingText(x, y, text) {
     const el = document.createElement('div');
     el.textContent = text;
     el.style.position = 'fixed';
-    el.style.left = `${x}px`;
-    el.style.top = `${y}px`;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
     el.style.color = '#00cec9';
     el.style.fontSize = '18px';
     el.style.fontWeight = 'bold';
@@ -281,7 +279,7 @@ function createFloatingText(x, y, text) {
 
     document.body.appendChild(el);
     setTimeout(() => {
-        el.style.top = `${y - 60}px`;
+        el.style.top = (y - 60) + 'px';
         el.style.opacity = '0';
     }, 20);
     setTimeout(() => el.remove(), 650);
@@ -343,10 +341,10 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         btn.classList.add('active');
         const target = document.getElementById(btn.getAttribute('data-target'));
-        if (target) target.classList.add('
+        if (target) target.classL
 
 
-active');
+ist.add('active');
     });
 });
 
