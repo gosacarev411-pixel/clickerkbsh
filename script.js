@@ -1,4 +1,4 @@
-// Безопасная инициализация Telegram WebApp (если скрипт заблокирован или открыт в обычном браузере)
+// Безопасная инициализация Telegram WebApp
 const tg = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : {
     expand: () => {},
     CloudStorage: null,
@@ -35,7 +35,6 @@ const ranks = [
     { name: "🏆 Миллиардер", threshold: 1000000000, avatar: "🏝️" }
 ];
 
-// Загрузка через Telegram CloudStorage или localStorage
 function loadGame() {
     if (tg.CloudStorage) {
         tg.CloudStorage.getItem('save_game_all', (err, val) => {
@@ -88,7 +87,10 @@ window.onload = loadGame;
 
 function saveName() {
     const name = document.getElementById('username-input').value.trim();
-    if (name.length < 2) { alert("Имя должно быть от 2 символов!"); return; }
+    if (name.length < 2) { 
+        alert("Имя должно быть от 2 символов!"); 
+        return; 
+    }
     playerName = name;
     document.getElementById('modal-reg').classList.add('hidden');
     saveGame();
@@ -117,11 +119,146 @@ function updateUI() {
     document.getElementById('price-shawarma').innerText = getCost(500, upgrades.shawarma).toLocaleString() + ' ₽';
     document.getElementById('price-factory').innerText = getCost(10000, upgrades.factory).toLocaleString() + ' ₽';
     document.getElementById('price-oil').innerText = getCost(250000, upgrades.oil).toLocaleString() + ' ₽';
-    document.getEleme
+    document.getElementById('price-it').innerText = getCost(2000000, upgrades.it).toLocaleString() + ' ₽';
+    d
+upgrades.it
+upgrades.it
 
 
-ntById('price-it').innerText = getCost(2000000, upgrades.it).toLocaleString() + ' ₽';
-    document.getElementById('price-space').innerText = getCost(15000000, upgrades.space).toLocaleString() + ' ₽';
+ocument.getElementById('price-space').innerText = getCost(15000000, upgrades.space).toLocaleString() + ' ₽';
 
     updateHungerUI();
     checkRank();
+}
+
+function updateHungerUI() {
+    document.getElementById('hunger-bar').style.width = hunger + '%';
+    document.getElementById('hunger-text').innerText = hunger;
+    const bar = document.getElementById('hunger-bar');
+    bar.style.backgroundColor = hunger > 50 ? 'var(--success-color)' : (hunger > 20 ? '#ffa502' : 'var(--danger-color)');
+}
+
+function checkRank() {
+    for (let i = ranks.length - 1; i >= 0; i--) {
+        if (totalEarned >= ranks[i].threshold) {
+            document.getElementById('player-rank').innerText = ranks[i].name;
+            document.getElementById('avatar-icon').innerText = ranks[i].avatar;
+            if (i === ranks.length - 1 && totalEarned >= 1000000000) {
+                document.getElementById('win-modal').classList.remove('hidden');
+            }
+            break;
+        }
+    }
+}
+
+// Игровой цикл (таймер)
+setInterval(() => {
+    if (!playerName) return;
+    if (hunger > 0) {
+        hunger = Math.max(0, hunger - 1);
+        updateHungerUI();
+    }
+    if (passiveIncome > 0 && hunger > 0) {
+        balance += passiveIncome;
+        totalEarned += passiveIncome;
+        updateUI();
+    }
+}, 1000);
+
+// Автосохранение
+setInterval(() => {
+    if (playerName) saveGame();
+}, 10000);
+
+function tapMoney(event) {
+    if (hunger <= 0) { 
+        alert("Ты истощен! Срочно купи еды во вкладке Еда!"); 
+        return; 
+    }
+    balance += clickPower;
+    totalEarned += clickPower;
+    updateUI();
+    
+    if (tg && tg.HapticFeedback) {
+        try { tg.HapticFeedback.impactOccurred('light'); } catch(e) {}
+    }
+
+    const el = document.createElement('div');
+    el.className = 'floating-number';
+    el.innerText = '+' + clickPower;
+    const rect = event.currentTarget.getBoundingClientRect();
+    el.style.left = (event.clientX - rect.left) + 'px';
+    el.style.top = (event.clientY - rect.top) + 'px';
+    event.currentTarget.appendChild(el);
+    setTimeout(() => el.remove(), 700);
+}
+
+function buyFood(cost, restore) {
+    if (balance < cost) { 
+        alert("Не хватает рублей!"); 
+        return; 
+    }
+    if (hunger >= 100) { 
+        alert("Ты уже полностью сыт!"); 
+        return; 
+    }
+    balance -= cost;
+    hunger = Math.min(100, hunger + restore);
+    saveGame();
+    updateUI();
+    if (tg && tg.HapticFeedback) {
+        try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+    }
+}
+
+function buyUpgrade(type) {
+    let baseCost = 50, boost = 1;
+    if (type === 'shawarma') { baseCost = 500; boost = 10; }
+    if (type === 'factory') { baseCost = 10000; boost = 250; }
+    if (type === 'oil') { baseCost = 250000; boost = 5000; }
+    if (type === 'it') { baseCost = 2000000; boost = 40000; }
+    if (type === 'space') { baseCost = 15000000; boost = 300000; }
+
+    let cost = getCost(baseCost, upgrades[type]);
+    if (balance < cost) { 
+        alert("Не хватает рублей для покупки!"); 
+        return; 
+    }
+
+    balance -= cost;
+    upgrades[type]++;
+
+    if (type === 'hat') { 
+        clickPower += 1; 
+    } else { 
+        passiveIncome += boost; 
+    }
+
+    saveGame();
+    updateUI();
+    if (tg && tg.HapticFeedback) {
+        try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+    }
+}
+
+function buyDonate(type) {
+    if (type === 'boost') {
+        if (crystals < 50) { alert("Нужно 50 кристаллов!"); return; }
+        crystals -= 50;
+        clickPower *= 2;
+        passiveIncome *= 2;
+        alert("Буст активирован! Доход и клики удвоены.");
+    } else if (type === 'money') {
+        if (crystals < 100) { alert("Нужно 100 кристаллов!"); return; }
+        crystals -= 100;
+        let pack = passiveIncome * 86400 * 3;
+        if (pack === 0) pack = 5000;
+        balance += pack;
+        totalEarned += pack;
+    }
+    saveGame();
+    updateUI();
+    if (tg && tg.HapticFeedback) {
+        try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+    }
+}
