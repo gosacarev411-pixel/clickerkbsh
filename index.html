@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bottle Combat</title>
-    <!-- Добавили версию v=3 для принудительного обновления кэша в Telegram -->
-    <link rel="stylesheet" href="style.css?v=3">
+    <!-- Версия v=5 для сброса кэша в Telegram -->
+    <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 
@@ -39,7 +39,6 @@
         <div class="clicker-area">
             <div id="coin" class="coin-wrapper">
                 <div class="coin-circle">
-                    <!-- Если вы используете картинку вместо эмодзи, замените содержимое на <img src="link.png" alt="bottle"> -->
                     <span class="coin-emoji">🍾</span>
                 </div>
             </div>
@@ -65,12 +64,12 @@
             <div class="market-card" id="buy-mining-1">
                 <h4>Космический бур</h4>
                 <p class="card-profit">+10 в час</p>
-                <div class="card-price">50 🪙</div>
+                <div class="card-price" id="m1-price">50 🪙</div>
             </div>
             <div class="market-card" id="buy-mining-2">
                 <h4>Лазерный завод</h4>
                 <p class="card-profit">+100 в час</p>
-                <div class="card-price">500 🪙</div>
+                <div class="card-price" id="m2-price">500 🪙</div>
             </div>
         </div>
     </div>
@@ -94,7 +93,7 @@
             <h2>Магазин / Скины</h2>
             <p>Измените внешний вид вашей бутылки</p>
         </div>
-        <div class="cards-grid" id="skins-container">
+        <div class="cards-grid">
             <div class="market-card">
                 <h4>Золотая бутылка</h4>
                 <p class="card-profit">Скоро доступно</p>
@@ -109,14 +108,14 @@
             <span class="nav-icon">🏠</span>
             <span class="nav-text">Главная</span>
         </button>
-        <button class="nav-btn" data-
-
-
-target="mine-screen">
-            <span class="nav-icon">⛏️️</span>
+        <button class="nav-btn" data-target="mine-screen">
+            <span class="nav-icon">⛏</span>
             <span class="nav-text">Шахты</span>
         </button>
-        <button class="nav-btn" data-target="friends-screen">
+        <button clas
+
+
+s="nav-btn" data-target="friends-screen">
             <span class="nav-icon">👥</span>
             <span class="nav-text">Друзья</span>
         </button>
