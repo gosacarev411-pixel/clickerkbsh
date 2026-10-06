@@ -7,97 +7,83 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Динамический космический фон -->
-    <canvas id="space-canvas"></canvas>
 
-    <!-- Основной игровой экран -->
-    <div id="screen-game" class="screen active">
+    <!-- Игровой экран (Главная) -->
+    <div id="game-screen" class="screen active">
         <div class="header">
-            <div class="score-container">
-                <span id="score">0.00000000</span> <span>🪙</span>
+            <div class="player-info">
+                <span id="player-name">Игрок</span>
             </div>
-            <div class="donate-balance-container">
-                <span id="donate-balance">0</span> <span>💎</span>
-            </div>
-        </div>
-
-        <div class="game-container">
-            <div class="coin" id="coin">
-                <img id="coin-skin-img" src="" alt="Bottle" style="display: none;">
-                <span id="coin-default-icon">🍾</span>
+            <div class="balance-container">
+                <span id="score">0</span>
+                <span class="coin-symbol">🪙</span>
             </div>
         </div>
 
-        <div class="footer-game">
-            <div class="energy-container">
-                <div class="energy-info">
-                    <span>⚡ Энергия</span>
-                    <span id="energy-text">500 / 500</span>
+        <div class="profit-info">
+            <span>Доход в час: <strong id="profit-per-hour">+0</strong></span>
+        </div>
+
+        <!-- Центральная бутылка -->
+        <div class="clicker-area">
+            <div id="coin" class="bottle-container">
+                <div class="glow"></div>
+                <!-- Вместо хомяка — бутылка (эмодзи или картинка) -->
+                <div id="coin-default-icon" class="bottle-icon">🍾</div>
+            </div>
+        </div>
+
+        <!-- Шкала энергии -->
+        <div class="energy-container">
+            <div class="energy-info">
+                <span>⚡ <id id="energy-text">500 / 500</id></span>
+            </div>
+            <div class="energy-bar-bg">
+                <div id="energy-progress" class="energy-bar-fill"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Меню навигации (как в Telegram Mini Apps) -->
+    <div class="nav-bar">
+        <button class="nav-btn active" data-target="game-screen">🏠 Главная</button>
+        <button class="nav-btn" data-target="mine-screen">⛏️ Шахты</button>
+        <button class="nav-btn" data-target="friends-screen">👥 Друзья</button>
+    </div>
+
+    <!-- Экран шахт (Прокачка пассивного дохода) -->
+    <div id="mine-screen" class="screen">
+        <h2>Улучшения шахт</h2>
+        <p class="sub-title">Прокачивайте пассивный доход в час</p>
+        <div class="upgrades-list">
+            <div class="upgrade-item" id="buy-mining-upgrade">
+                <div class="upgrade-icon">🚀</div>
+                <div class="upgrade-details">
+                    <h4>Космический бур</h4>
+                    <p>Доход: +10 / час</p>
+                    <span id="upgrade-mining-cost">Цена: 50 🪙</span>
                 </div>
-                <div class="energy-bar-background">
-                    <div class="energy-progress" id="energy-progress"></div>
+            </div>
+            <div class="upgrade-item" id="buy-click-upgrade">
+                <div class="upgrade-icon">⚡</div>
+                <div class="upgrade-details">
+                    <h4>Усиленный тап</h4>
+                    <p>+1 к клику</p>
+                    <span id="upgrade-click-cost">Цена: 100 🪙</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Экран "Топ" -->
-    <div id="screen-top" class="screen">
-        <h2 class="screen-title">🏆 Топ игроков</h2>
-        <div class="top-list" id="top-list-container">
-            <!-- Динамически заполняется -->
+    <!-- Экран друзей -->
+    <div id="friends-screen" class="screen">
+        <h2>Пригласите друзей!</h2>
+        <p class="sub-title">Получайте бонусы за каждого друга</p>
+        <div class="friend-card">
+            <p>Пригласите друга и получите <strong>500 🪙</strong></p>
+            <button class="invite-btn" onclick="alert('Ссылка скопирована в буфер обмена!')">Пригласить друга</button>
         </div>
     </div>
-
-    <!-- Экран "Магазин" (Улучшения и Майнинг) -->
-    <div id="screen-shop" class="screen">
-        <h2 class="screen-title">⚡ Магазин улучшений</h2>
-        <div class="shop-list">
-            <div class="shop-item">
-                <div class="shop-info">
-                    <h3>Множитель клика</h3>
-                    <p>+0.000000001 за клик</p>
-                    <span id="upgrade-click-cost">Цена: 1.0 🪙</span>
-                </div>
-                <button class="shop-btn" id="buy-click-upgrade">Купить</button>
-            </div>
-            <div class="shop-item">
-                <div class="shop-info">
-                    <h3>Пассивный майнинг</h3>
-                    <p>+0.000000001 монета / сек</p>
-                    <span id="upgrade-mining-cost">Цена: 5.0 🪙</span>
-                </div>
-                <button class="shop-btn" id="buy-mining-upgrade">Купить</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Экран "Скины" -->
-    <div id="screen-skins" class="screen">
-        <h2 class="screen-title">🎨 Скины бутылок</h2>
-        <div class="skins-grid" id="skins-container">
-            <!-- Динамически заполняется (6 скинов) -->
-        </div>
-    </div>
-
-    <!-- Экран "Кошелек" (Донат) -->
-    <div id="screen-wallet" class="screen">
-        <h2 class="screen-title">💎 Кошелек (Донат)</h2>
-        <div class="wallet-box">
-            <p>Пополните баланс кристаллов для покупки эксклюзивных скинов на монету!</p>
-            <button class="donate-btn" id="donate-100-btn">Купить 100 кристаллов 💎</button>
-            <button class="donate-btn" id="donate-500-btn">Купить 500 кристаллов 💎</button>
-        </div>
-    </div>
-
-    <!-- Нижняя навигация -->
-    <nav class="bottom-nav">
-        <button class="nav-btn active" data-target="screen-game">🏠 Игра</button>
-        <button class="nav-btn" data-target="screen-top">🏆 Топ</button>
-        <button class="nav-btn" data-target="screen-shop">⚡ Магазин</button>
-        <button class="nav-btn" data-target="screen-skins">🎨 Скины</button>
-        <button class="nav-btn" data-target="screen-wallet">💎 Кошелек</button>
-    </nav>
 
     <script src="script.js"></script>
 </body>
