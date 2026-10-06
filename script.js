@@ -91,9 +91,10 @@ setInterval(() => {
     saveData();
 }, 1000);
 
+// Покупка Космического бура (Шахта 1)
 const buyM1 = document.getElementById('buy-mining-1');
 if (buyM1) {
-    buyM1.addEventListener('click', () => {
+    buyM1.onclick = () => {
         if (score >= mining1Cost) {
             score -= mining1Cost;
             profitPerHour += 10;
@@ -104,17 +105,18 @@ if (buyM1) {
         } else {
             alert('Недостаточно монет!');
         }
-    });
+    };
 }
 
+// Покупка Лазерного завода (Шахта 2)
 const buyM2 = document.getElementById('buy-mining-2');
 if (buyM2) {
-    buyM2.addEventListener('click', () => {
-        if (score >= mining2Cost) {
-            score -= mining2C
+    buyM2.onclick = () => {
+        if (score >=
 
 
-ost;
+mining2Cost) {
+            score -= mining2Cost;
             profitPerHour += 100;
             mining2Cost = Math.floor(mining2Cost * 1.5);
             updateUI();
@@ -123,19 +125,23 @@ ost;
         } else {
             alert('Недостаточно монет!');
         }
-    });
+    };
 }
 
-document.querySelectorAll('.nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+// Переключение вкладок для нового меню из 5 кнопок
+const navButtons = document.querySelectorAll('.nav-btn');
+navButtons.forEach(btn => {
+    btn.onclick = () => {
+        navButtons.forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         
         btn.classList.add('active');
         const targetId = btn.getAttribute('data-target');
         const targetScreen = document.getElementById(targetId);
-        if (targetScreen) targetScreen.classList.add('active');
-    });
+        if (targetScreen) {
+            targetScreen.classList.add('active');
+        }
+    };
 });
 
 updateUI();
