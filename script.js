@@ -1,11 +1,12 @@
 let score = 0;
 let maxEnergy = 1000;
 let energy = 1000;
-let profitPerClick = 0.1; // Монета увеличивается на 0.1 за клик
-let energyCost = 1;      // Энергия тратится по 1 за клик
+let profitPerClick = 0.5; // Монеты за клик
+let energyCost = 1;      // Трата энергии за клик
 
-// Время полного восстановления в миллисекундах (30 минут = 30 * 60 * 1000 = 1800000 мс)
-const regenerationTimeMs = 30 * 60 * 1000; 
+let isRegenerating = false;
+let regenerationTimeLeft = 30 * 60; // 30 минут в секундах (1800 секунд)
+let timerInterval = null;
 
 const scoreEl = document.getElementById('score');
 const coinEl = document.getElementById('coin');
@@ -13,32 +14,74 @@ const energyTextEl = document.getElementById('energy-text');
 const energyProgressEl = document.getElementById('energy-progress');
 const buyBoostBtn = document.getElementById('buy-boost-btn');
 
+// Создаем элемент для отображения таймера восстановления на экране (если его еще нет)
+let timerDisplayEl = document.getElementById('regeneration-timer');
+if (!timerDisplayEl) {
+    timerDisplayEl = document.createElement('div');
+    timerDisplayEl.id = 'regeneration-timer';
+    timerDisplayEl.style.color = '#ff4757';
+    timerDisplayEl.style.fontSize = '18px';
+    timerDisplayEl.style.fontWeight = 'bold';
+    timerDisplayEl.style.marginTop = '10px';
+    timerDisplayEl.style.textAlign = 'center';
+    energyTextEl.parentNode.appendChild(timerDisplayEl);
+}
+
 // Клик по хомяку
 coinEl.addEventListener('click', (e) => {
-    if (energy >= energyCost) {
+    // Кликать можно, только если энергия больше или равна стоимости клика и таймер не активен
+    if (!isRegenerating && energy >= energyCost) {
         score += profitPerClick;
         energy -= energyCost;
         updateUI();
         createFloatingText(e.clientX, e.clientY, `+${profitPerClick}`);
+
+        // Если энергия упала до 0 (или меньше 1), запускаем таймер на 30 минут
+        if (energy < energyCost) {
+            energy = 0;
+            startRegenerationTimer();
+        }
     }
 });
 
-// Восстановление энергии каждую секунду (полное восстановление за 30 минут)
-const energyPerSecond = maxEnergy / (regenerationTimeMs / 1000);
+// Функция запуска 30-минутного таймера восстановления
+function startRegenerationTimer() {
+    isRegenerating = true;
+    regenerationTimeLeft = 30 * 60; // сбрасываем на 30 минут
+    updateUI();
 
-setInterval(() => {
-    if (energy < maxEnergy) {
-        energy = Math.min(maxEnergy, energy + energyPerSecond);
+    if (timerInterval) clearInterval(timerInterval);
+
+    timerInterval = setInterval(() => {
+        regenerationTimeLeft--;
         updateUI();
-    }
-}, 1000);
+
+        if (regenerationTimeLeft <= 0) {
+            clearInterval(timerInterval);
+            energy = maxEnergy; // Полное восстановление
+            isRegenerating = false;
+            updateUI();
+        }
+    }, 1000);
+}
 
 // Обновление интерфейса
 function updateUI() {
-    scoreEl.textContent = score.toFixed(1); // Красивый вывод с одним знаком после запятой
+    scoreEl.textContent = score.toFixed(1);
     energyTextEl.textContent = `${Math.floor(energy)} / ${maxEnergy}`;
     const energyPercent = (energy / maxEnergy) * 100;
     energyProgressEl.style.width = `${energyPercent}%`;
+
+    // Управляем отображением таймера
+    if (isRegenerating) {
+        const minutes = Math.floor(regenerationTimeLeft / 60);
+        const seconds = regenerationTimeLeft % 60;
+        const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        timerDisplayEl.textContent = `Восстановление энергии: ${formattedTime}`;
+        timerDisplayEl.style.display = 'block';
+    } else {
+        timerDisplayEl.style.display = 'none';
+    }
 }
 
 // Анимация всплывающего плюсика
@@ -73,5 +116,4 @@ buyBoostBtn.addEventListener('click', () => {
         alert('Запрос на оплату отправлен!');
     } else {
         alert('Покупка доступна только внутри приложения Telegram.');
-    }
-});
+    });
