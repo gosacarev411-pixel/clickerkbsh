@@ -1,14 +1,14 @@
-// --- ИГРОВОЙ СКРИПТ (ФИНАЛЬНЫЙ ИСПРАВЛЕННЫЙ) ---
+// --- ИГРОВОЙ СКРИПТ (ПРИБАВЛЕНИЕ ПО 1 МОНЕТЕ ЗА КЛИК) ---
 
 let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
 let donateBalance = parseInt(localStorage.getItem('hamster_donate')) || 0;
 let maxEnergy = 500;
-let profitPerClick = parseFloat(localStorage.getItem('hamster_profit')) || 0.000001;
+let profitPerClick = parseFloat(localStorage.getItem('hamster_profit')) || 1; // Увеличено до 1
 let miningPower = parseFloat(localStorage.getItem('hamster_mining')) || 0;
 let energyCost = 1;
 
-let clickUpgradeCost = parseFloat(localStorage.getItem('hamster_click_cost')) || 1.0;
-let miningUpgradeCost = parseFloat(localStorage.getItem('hamster_mining_cost')) || 5.0;
+let clickUpgradeCost = parseFloat(localStorage.getItem('hamster_click_cost')) || 10;
+let miningUpgradeCost = parseFloat(localStorage.getItem('hamster_mining_cost')) || 50;
 
 const skinsData = [
     { id: 0, name: 'Классическая', price: 0, img: '', icon: '🍾' },
@@ -60,7 +60,7 @@ function saveGameData() {
 
 function updateUI() {
     if (scoreEl) {
-        scoreEl.textContent = score.toFixed(6);
+        scoreEl.textContent = Math.floor(score); // Выводим целое число монет
     }
     if (donateBalanceEl) donateBalanceEl.textContent = donateBalance;
     if (energyTextEl) energyTextEl.textContent = Math.floor(energy) + ' / ' + maxEnergy;
@@ -76,10 +76,10 @@ function updateUI() {
             timerDisplayEl.textContent = 'Восстановление: ' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
             timerDisplayEl.style.display = 'block';
         } else {
-            timerDisplayEl.style.display = 'none';
 
 
-}
+timerDisplayEl.style.display = 'none';
+        }
     }
 
     updateSkinDisplay();
@@ -105,8 +105,8 @@ function updateSkinDisplay() {
 function updateShopUI() {
     const clickCostEl = document.getElementById('upgrade-click-cost');
     const miningCostEl = document.getElementById('upgrade-mining-cost');
-    if (clickCostEl) clickCostEl.textContent = 'Цена: ' + clickUpgradeCost.toFixed(2) + ' 🪙';
-    if (miningCostEl) miningCostEl.textContent = 'Цена: ' + miningUpgradeCost.toFixed(2) + ' 🪙';
+    if (clickCostEl) clickCostEl.textContent = 'Цена: ' + clickUpgradeCost + ' 🪙';
+    if (miningCostEl) miningCostEl.textContent = 'Цена: ' + miningUpgradeCost + ' 🪙';
 }
 
 function renderSkins() {
@@ -158,9 +158,9 @@ function renderTopList() {
     const container = document.getElementById('top-list-container');
     if (!container) return;
     const fakePlayers = [
-        { name: 'CryptoKing', score: 12.5 },
-        { name: 'Satoshi_N', score: 8.2 },
-        { name: 'TelegramUser', score: 5.1 },
+        { name: 'CryptoKing', score: 1250 },
+        { name: 'Satoshi_N', score: 820 },
+        { name: 'TelegramUser', score: 510 },
         { name: 'Вы (Игрок)', score: score }
     ];
     fakePlayers.sort((a, b) => b.score - a.score);
@@ -169,7 +169,7 @@ function renderTopList() {
     fakePlayers.forEach((p, index) => {
         const item = document.createElement('div');
         item.className = 'top-item';
-        item.innerHTML = '<span>#' + (index + 1) + ' ' + p.name + '</span> <span>' + p.score.toFixed(6) + ' 🪙</span>';
+        item.innerHTML = '<span>#' + (index + 1) + ' ' + p.name + '</span> <span>' + Math.floor(p.score) + ' 🪙</span>';
         container.appendChild(item);
     });
 }
@@ -201,11 +201,11 @@ function createFloatingText(x, y, text) {
     el.style.left = x + 'px';
     el.style.top = y + 'px';
     el.style.color = '#00cec9';
-    el.style.fontSize = '18px';
-    el.
+    el.style
 
 
-style.fontWeight = 'bold';
+.fontSize = '18px';
+    el.style.fontWeight = 'bold';
     el.style.zIndex = '9999';
     el.style.pointerEvents = 'none';
     el.style.transition = 'all 0.6s ease-out';
@@ -227,7 +227,7 @@ if (coinEl) {
             updateUI();
             saveGameData();
             
-            createFloatingText(e.clientX, e.clientY, '+0.000001');
+            createFloatingText(e.clientX, e.clientY, '+' + profitPerClick);
 
             coinEl.style.transform = 'scale(0.9)';
             setTimeout(() => {
@@ -290,8 +290,8 @@ if (buyClickBtn) {
     buyClickBtn.addEventListener('click', () => {
         if (score >= clickUpgradeCost) {
             score -= clickUpgradeCost;
-            profitPerClick += 0.000001;
-            clickUpgradeCost *= 1.5;
+            profitPerClick += 1;
+            clickUpgradeCost = Math.floor(clickUpgradeCost * 1.5);
             updateUI();
             saveGameData();
         } else {
@@ -305,8 +305,8 @@ if (buyMiningBtn) {
     buyMiningBtn.addEventListener('click', () => {
         if (score >= miningUpgradeCost) {
             score -= miningUpgradeCost;
-            miningPower += 0.000001;
-            miningUpgradeCost *= 1.5;
+            miningPower += 1;
+            miningUpgradeCost = Math.floor(miningUpgradeCost * 1.5);
             updateUI();
             saveGameData();
         } else {
@@ -340,11 +340,11 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         btn.classList.add('active');
-        const target = document.getElementById(btn.getAttribute('data-target'));
-        if (target) target.classL
+        const target = document
 
 
-ist.add('active');
+.getElementById(btn.getAttribute('data-target'));
+        if (target) target.classList.add('active');
     });
 });
 
