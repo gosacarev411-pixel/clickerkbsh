@@ -29,14 +29,14 @@ if (!timerDisplayEl) {
 
 // Клик по хомяку
 coinEl.addEventListener('click', (e) => {
-    // Кликать можно, только если энергия больше или равна стоимости клика и таймер не активен
+    // Кликать можно, только если идет процесс восстановления ИЛИ энергии достаточно
     if (!isRegenerating && energy >= energyCost) {
         score += profitPerClick;
         energy -= energyCost;
         updateUI();
         createFloatingText(e.clientX, e.clientY, `+${profitPerClick}`);
 
-        // Если энергия упала до 0 (или меньше 1), запускаем таймер на 30 минут
+        // Если энергия упала до 0 (или меньше стоимости клика), запускаем таймер на 30 минут
         if (energy < energyCost) {
             energy = 0;
             startRegenerationTimer();
@@ -56,10 +56,11 @@ function startRegenerationTimer() {
         regenerationTimeLeft--;
         updateUI();
 
+        // Когда 30 минут истекли
         if (regenerationTimeLeft <= 0) {
             clearInterval(timerInterval);
-            energy = maxEnergy; // Полное восстановление
-            isRegenerating = false;
+            energy = maxEnergy; // Полное восстановление энергии до 1000
+            isRegenerating = false; // Снимаем блокировку тапов
             updateUI();
         }
     }, 1000);
