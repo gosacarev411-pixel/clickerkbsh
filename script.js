@@ -1,9 +1,9 @@
-// --- ИГРОВОЙ СКРИПТ (ПРИРОСТ 0.00001 ЗА ТАП) ---
+// --- ИГРОВОЙ СКРИПТ (ПРИРОСТ 0.000001 ЗА ТАП) ---
 
 let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
 let donateBalance = parseInt(localStorage.getItem('hamster_donate')) || 0;
 let maxEnergy = 500;
-let profitPerClick = parseFloat(localStorage.getItem('hamster_profit')) || 0.00001; // Установили 0.00001 за тап
+let profitPerClick = parseFloat(localStorage.getItem('hamster_profit')) || 0.000001; // Установлено 0.000001 за тап
 let miningPower = parseFloat(localStorage.getItem('hamster_mining')) || 0;
 let energyCost = 1;
 
@@ -61,7 +61,7 @@ function saveGameData() {
 // ГЛАВНАЯ ФУНКЦИЯ ОБНОВЛЕНИЯ ИНТЕРФЕЙСА
 function updateUI() {
     if (scoreEl) {
-        // Отображаем до 6 знаков после запятой, чтобы было отлично видно прирост
+        // Отображаем до 6 знаков после запятой, чтобы было видно прирост
         scoreEl.textContent = score.toFixed(6);
     }
     if (donateBalanceEl) donateBalanceEl.textContent = donateBalance;
@@ -75,10 +75,10 @@ function updateUI() {
             if (regenerationTimeLeft < 0) regenerationTimeLeft = 0;
             const minutes = Math.floor(regenerationTimeLeft / 60);
             const seconds = regenerationTimeLeft % 60;
-            timerDisplayEl.textContent = `Восстановление: ${minutes.toString().padStart(2, '0')}:${second
+            timerDisplayEl.textContent = `Восстановление: ${minutes.toString().padStart(2, '0')}:${seconds.to
 
 
-s.toString().padStart(2, '0')}`;
+String().padStart(2, '0')}`;
             timerDisplayEl.style.display = 'block';
         } else {
             timerDisplayEl.style.display = 'none';
@@ -168,7 +168,7 @@ function renderTopList() {
     fakePlayers.forEach((p, index) => {
         const item = document.createElement('div');
         item.className = 'top-item';
-        item.innerHTML = `<span>#${index + 1} ${p.name}</span> <span>${p.score.toFixed(4)} 🪙</span>`;
+        item.innerHTML = `<span>#${index + 1} ${p.name}</span> <span>${p.score.toFixed(6)} 🪙</span>`;
         container.appendChild(item);
     });
 }
@@ -199,15 +199,14 @@ if (coinEl) {
     coinEl.addEventListener('click', (e) => {
         if (!isRegenerating && energy >= energyCost) {
             score += profitPerClick;
-            energy -= energyCo
+            energy -= energyCost;
 
 
-st;
-            updateUI();
+updateUI();
             saveGameData();
             
             // Всплывающий текст с точным приростом
-            createFloatingText(e.clientX, e.clientY, `+0.00001`);
+            createFloatingText(e.clientX, e.clientY, `+0.000001`);
 
             // Эффект уменьшения монеты при клике
             coinEl.style.transform = 'scale(0.9)';
@@ -296,7 +295,7 @@ if (buyClickBtn) {
     buyClickBtn.addEventListener('click', () => {
         if (score >= clickUpgradeCost) {
             score -= clickUpgradeCost;
-            profitPerClick += 0.00001; // Увеличиваем клик на 0.00001 при покупке улучшения
+            profitPerClick += 0.000001; // Увеличиваем клик на 0.000001 при покупке улучшения
             clickUpgradeCost *= 1.5;
             updateUI();
             saveGameData();
@@ -311,7 +310,7 @@ if (buyMiningBtn) {
     buyMiningBtn.addEventListener('click', () => {
         if (score >= miningUpgradeCost) {
             score -= miningUpgradeCost;
-            miningPower += 0.00001;
+            miningPower += 0.000001;
             miningUpgradeCost *= 1.5;
             updateUI();
             saveGameData();
