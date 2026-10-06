@@ -1,11 +1,12 @@
-let score = 0;
+// Загружаем сохраненные данные или ставим значения по умолчанию
+let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
 let maxEnergy = 500;
-let energy = 500;
-let profitPerClick = 0.1;
+let energy = localStorage.getItem('hamster_energy') !== null ? parseFloat(localStorage.getItem('hamster_energy')) : 500;
+let profitPerClick = 0.00001;
 let energyCost = 1;
 
-let isRegenerating = false;
-let regenerationTimeLeft = 30 * 60;
+let isRegenerating = localStorage.getItem('hamster_isRegenerating') === 'true';
+let regenerationTimeLeft = parseInt(localStorage.getItem('hamster_timeLeft')) || (30 * 60);
 let timerInterval = null;
 
 const scoreEl = document.getElementById('score');
@@ -26,36 +27,58 @@ if (!timerDisplayEl) {
     energyTextEl.parentNode.appendChild(timerDisplayEl);
 }
 
+// Функция сохранения данных в память браузера
+function saveGameData() {
+    localStorage.setItem('hamster_score', score);
+    localStorage.setItem('hamster_energy', energy);
+    localStorage.setItem('hamster_isRegenerating', isRegenerating);
+    localStorage.setItem('hamster_timeLeft', regenerationTimeLeft);
+}
+
+// Если при перезагрузке приложения процесс восстановления уже шел, возобновляем таймер
+if (isRegenerating) {
+    startRegenerationTimer(false); // передаем false, чтобы не сбрасывать время заново
+} else {
+    updateUI();
+}
+
 coinEl.addEventListener('click', (e) => {
     if (!isRegenerating && energy >= energyCost) {
         score += profitPerClick;
         energy -= energyCost;
         updateUI();
+        saveGameData();
         createFloatingText(e.clientX, e.clientY, `+${profitPerClick}`);
 
         if (energy < energyCost) {
             energy = 0;
-            startRegenerationTimer();
+            startRegenerationTimer(true);
         }
     }
 });
 
-function startRegenerationTimer() {
+function startRegenerationTimer(resetTime = true) {
     isRegenerating = true;
-    regenerationTimeLeft = 30 * 60;
+    if (resetTime) {
+        regenerationTimeLeft = 30 * 60;
+    }
     updateUI();
+    saveGameData();
 
     if (timerInterval) clearInterval(timerInterval);
 
     timerInterval = setInterval(() => {
         regenerationTimeLeft--;
+        saveGameData();
         updateUI();
 
         if (regenerationTimeLeft <= 0) {
             clearInterval(timerInterval);
             energy = maxEnergy;
             isRegenerating = false;
+            regenerationTimeLeft = 30 * 60;
             updateUI();
+            saveGameData();
         }
     }, 1000);
 }
@@ -90,7 +113,10 @@ function createFloatingText(x, y, text) {
     el.style.transition = 'all 0.6s ease-out';
     el.style.transform = 'translate(-50%, -50%)';
 
-    document.body.appendChild(el);
+    document
+
+
+.body.appendChild(el);
 
     setTimeout(() => {
         el.style.top = `${y - 60}px`;
