@@ -1,4 +1,3 @@
-// Загружаем сохраненные данные или ставим значения по умолчанию
 let score = parseFloat(localStorage.getItem('hamster_score')) || 0;
 let maxEnergy = 500;
 let profitPerClick = 0.0001;
@@ -7,24 +6,21 @@ let energyCost = 1;
 let isRegenerating = localStorage.getItem('hamster_isRegenerating') === 'true';
 let energy = localStorage.getItem('hamster_energy') !== null ? parseFloat(localStorage.getItem('hamster_energy')) : 500;
 
-let regenerationTimeLeft = 30 * 60; // 30 минут в секундах
+let regenerationTimeLeft = 30 * 60;
 let timerInterval = null;
 
 const TOTAL_REGEN_TIME = 30 * 60;
 
-// Проверяем фоновое время при запуске приложения
 let savedEndTime = localStorage.getItem('hamster_endTime');
 if (isRegenerating && savedEndTime) {
     let currentTime = Math.floor(Date.now() / 1000);
     let timeLeft = parseInt(savedEndTime) - currentTime;
 
     if (timeLeft <= 0) {
-        // Если время вышло, пока приложение было закрыто
         energy = maxEnergy;
         isRegenerating = false;
         localStorage.removeItem('hamster_endTime');
     } else {
-        // Если таймер еще идет
         regenerationTimeLeft = timeLeft;
         energy = 0;
     }
@@ -48,21 +44,18 @@ if (!timerDisplayEl) {
     energyTextEl.parentNode.appendChild(timerDisplayEl);
 }
 
-// Функция сохранения данных в память браузера
 function saveGameData() {
     localStorage.setItem('hamster_score', score);
     localStorage.setItem('hamster_energy', energy);
     localStorage.setItem('hamster_isRegenerating', isRegenerating);
 }
 
-// Запуск или возобновление таймера
 if (isRegenerating) {
     startRegenerationTimer(false);
 } else {
     updateUI();
 }
 
-// Клик по хомяку
 coinEl.addEventListener('click', (e) => {
     if (!isRegenerating && energy >= energyCost) {
         score += profitPerClick;
@@ -115,29 +108,27 @@ function startRegenerationTimer(createNew = true) {
     }, 1000);
 }
 
-// Обновление интерфейса
 function updateUI() {
     scoreEl.textContent = score.toFixed(4);
     energyTextEl.textContent = `${Math.floor(energy)} / ${maxEnergy}`;
     const energyPercent = (energy / maxEnergy) * 100;
     energyProgressEl.style.width = `${energyPercent}%`;
 
-    i
-
-
-f (isRegenerating) {
+    if (isRegenerating) {
         if (regenerationTimeLeft < 0) regenerationTimeLeft = 0;
         const minutes = Math.floor(regenerationTimeLeft / 60);
         const seconds = regenerationTimeLeft % 60;
         const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        timerDisplayEl.textContent = `Восстановление энергии: ${formattedTime}`;
+        timerDisplayEl.textContent = `Восста
+
+
+новление энергии: ${formattedTime}`;
         timerDisplayEl.style.display = 'block';
     } else {
         timerDisplayEl.style.display = 'none';
     }
 }
 
-// Анимация всплывающего текста при клике
 function createFloatingText(x, y, text) {
     const el = document.createElement('div');
     el.textContent = text;
@@ -163,7 +154,6 @@ function createFloatingText(x, y, text) {
     }, 680);
 }
 
-// Обработка нажатия на кнопку покупки бонуса
 buyBoostBtn.addEventListener('click', () => {
     if (window.Telegram && window.Telegram.WebApp) {
         alert('Запрос на оплату отправлен!');
