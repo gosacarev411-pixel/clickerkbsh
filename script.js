@@ -1,103 +1,95 @@
+// Состояние игры
 let state = {
-    money: 10,
-    energy: 100,
-    mood: 100,
-    day: 1,
-    job: '',
-    story: 'Ты просыпаешься на скамейке в парке. В кармане 10 долларов. Пора что-то менять.'
+    coins: 0,
+    tapLevel: 1,
+    incomePerSec: 0,
+    upgrades: [
+        { id: 'binance', name: 'Binance', cost: 10, income: 1, owned: 0 },
+        { id: 'bybit', name: 'Bybit', cost: 50, income: 5, owned: 0 },
+        { id: 'okx', name: 'OKX', cost: 200, income: 20, owned: 0 },
+        { id: 'kucoin', name: 'KuCoin', cost: 1000, income: 100, owned: 0 }
+    ]
 };
 
+// Элементы DOM
+const coinsEl = document.getElementById('coins');
+const perSecondEl = document.getElementById('per-second');
+const tapLevelEl = document.getElementById('tap-level');
+const upgradesDiv = document.getElementById('upgrades');
+const tapEffectEl = document.getElementById('tap-effect');
+
+// Функция обновления интерфейса
 function updateUI() {
-    document.getElementById('money').textContent = state.money;
-    document.getElementById('energy').textContent = state.energy;
-    document.getElementById('mood').textContent = state.mood;
-    document.getElementById('day').textContent = state.day;
-    document.getElementById('story').textContent = state.story;
+    coinsEl.textContent = Math.floor(state.coins);
+    perSecondEl.textContent = state.incomePerSec;
+    tapLevelEl.textContent = state.tapLevel + 'x';
 
-    // Проверка на победу
-    if (state.money >= 1000000) {
-        state.story = 'ПОЗДРАВЛЯЕМ! Ты стал миллионером! Твоя история успеха началась с 10 долларов.';
-        document.getElementById('actions').style.display = 'none';
-        document.getElementById('high-risk').style.display = 'none';
-        document.getElementById('sleep-btn').style.display = 'none';
-    }
-
-    // Если энергии нет, можно только спать
-    if (state.energy <= 0) {
-        document.getElementById('actions').style.display = 'none';
-        document.getElementById('high-risk').style.display = 'none';
-        document.getElementById('sleep-btn').style.display = 'inline-block';
-    } else {
-        // Открываем новые действия по мере роста капитала
-        document.getElementById('sleep-btn').style.display = 'none';
-        document.getElementById('actions').style.display = 'block';
-        if (state.money >= 50) {
-            document.getElementById('high-risk').style.display = 'block';
-        } else {
-            document.getElementById('high-risk').style.display = 'none';
+    // Перерисовываем кнопки улучшений
+    upgradesDiv.innerHTML = '';
+    state.upgrades.forEach(upg => {
+        const btn = document.createElement('button');
+        btn.className = 'upgrade-btn';
+        btn.textContent = `${upg.name} (${upg.income}/sec) - ${upg.cost} монет`;
+        btn.onclick = () => buyUpgrade(upg.id);
+        
+        if (state.coins < upg.cost) {
+            btn.disabled = true;
         }
-    }
+        
+        upgradesDiv.appendChild(btn);
+    });
 }
 
-function work(type) {
-    if (state.energy <= 0) return;
-
-    switch(type) {
-        case 'busker':
-            state.money += 5;
-            state.energy -= 10;
-            state.mood -= 5;
-            state.story = 'Ты спел пару песен Цоя в переходе. Прохожие накидали 5 долларов. Голова гудит.';
-            break;
-        case 'bottle':
-            state.money += 15;
-            state.energy -= 20;
-            state.story = 'Обход мусорок занял 4 часа. Выручка со стеклотары — 15 долларов.';
-            break;
-        case 'taxi':
-            if (state.money < 50) {
-                state.story = 'Нет денег даже на бензин.';
-                return;
-            }
-            const taxiEarn = Math.floor(Math.random() * 200) + 100;
-            state.money = state.money - 50 + taxiEarn;
-            state.energy -= 40;
-            state.mood -= 10;
-            state.story = `Ты взял старую машину напрокат. Вечером в кармане на ${taxiEarn} долларов больше.`;
-            break;
-    }
+// Функция тапа по хомяку
+function tapCoin() {
+    state.coins += state.tapLevel;
+    // Анимация +1
+    tapEffectEl.style.opacity = '1';
+    tapEffectEl.style.transform = 'translateY(0) scale(1)';
+    setTimeout(() => {
+        tapEffectEl.style.opacity = '0';
+        tapEffectEl.style.transform = 'translateY(-50px) scale(1.5)';
+    }, 10);
     updateUI();
 }
 
-function gamble(type) {
-    if (state.energy <= 0) return;
-    if (type === 'casino') {
-        const bet = 20;
-        if (state.money < bet) {
-            state.story = 'У тебя нет 20 долларов для входа.';
-            return;
-        }
-        state.money -= bet;
-        if (Math.random() > 0.7) { // 30% шанс выиграть
-            const win = bet * 5;
-            state.money += win;
-            state.mood += 20;
-            state.story = `Невероятная удача! Ты выиграл ${win} долларов!`;
-        } else {
-            state.mood -= 30;
-            state.story = 'Охрана вывела тебя из подвала. Минус 20 долларов.';
-        }
-        state.energy -= 25;
+// Покупка улучшения
+function buyUpgrade(id) {
+    const upg = state.upgrades.find(u => u.id === id);
+    if (state.coins >= upg.cost) {
+        state.coins -= upg.cost;
+        upg.owned++;
+        upg.cost = Math.floor(upg.cost * 1.5); // Увеличиваем цену на 50%
+        state.incomePerSec += upg.income;
         updateUI();
     }
 }
 
-function nextDay() {
-    state.day++;
-    state.energy = 100;
-    state.mood = Math.min(100, state.mood + 20);
-    state.story = `Наступил новый день. Энергия восстановилась. В твоем кошельке ${state.money}$`;
+// Автосбор дохода каждую секунду
+setInterval(() => {
+    state.coins += state.incomePerSec;
     updateUI();
+}, 1000);
+
+// Сохранение в localStorage
+function saveGame() {
+    localStorage.setItem('coinKombatSave', JSON.stringify(state));
+    alert('Игра сохранена!');
+}
+
+function loadGame() {
+    const data = localStorage.getItem('coinKombatSave');
+    if (data) {
+        state = JSON.parse(data);
+        // Восстанавливаем функции в объектах (JSON их удаляет)
+        state.upgrades.forEach(upg => {
+            // Пересчитываем стоимость при загрузке (если она не сохранялась)
+            // Здесь для простоты считаем, что цена хранится в сейве
+            updateUI();
+        });
+        updateUI();
+        alert('Игра загружена!');
+    }
 }
 
 // Инициализация
