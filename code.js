@@ -37,12 +37,49 @@ function getMaxEnergy(base, level) {
     return Math.floor(base + 20 * Math.log(level + 1));
 }
 
-// --- Данные магазина ---
+// Глобальные данные магазина
 const shopItems = [
-    { id: 'tap1', name: 'Железный палец', desc: 'Увеличивает урон', type: 'power', baseValue: 1, cost: 50, level: 0 },
-    { id: 'energy1', name: 'Батарейка', desc: 'Увеличивает макс. энергию', type: 'energy', baseValue: 100, cost: 200, level: 0 },
-    { id: 'food1', name: 'Бутерброд', desc: 'Восстанавливает 50 сытости', type: 'hunger', value: 50, cost: 30 }
+    { id: 'tap_upgrade', name: 'Железный палец', cost: 50 },
+    // Остальные товары...
 ];
+
+document.addEventListener('DOMContentLoaded', () => {
+    let state;
+    
+    // Загрузка состояния из LocalStorage при загрузке страницы
+    const loadState = () => {
+        try {
+            const data = localStorage.getItem('TapMaster');
+            if (data) return JSON.parse(data);
+            else return {};
+        } catch(e) {}
+        
+        return {}; // Возвращаем пустой объект по умолчанию
+    };
+
+    // Сохранение состояния каждые 3 секунды
+    setInterval(() => saveState(), 3000);
+
+    // Инициализация игры
+    state = loadState();
+    updateUI();
+});
+
+function openShop() {
+    // Проверка существования массива товаров
+    if (!Array.isArray(shopItems)) return; 
+
+    // Рендеринг товаров
+    const container = document.getElementById('shop-items');
+    container.innerHTML = '';
+
+    for (let item of shopItems) {
+        const el = document.createElement('div');
+        el.className = 'item';
+        el.textContent = `${item.name} — ${item.cost}`;
+        container.appendChild(el);
+    }
+}
 
 // --- Функции UI ---
 function updateUI() {
