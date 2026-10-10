@@ -1,269 +1,301 @@
-// Инициализация Telegram SDK
+// Инициализация Telegram WebApp
 const tg = window.Telegram.WebApp;
 tg.expand();
 
-// --- Глобальные переменные состояния ---
+// Глобальный объект состояния
 let state = {
-    coins: 0,
-    energy: 100,
-    maxEnergy: 100,
-    hunger: 100,
-    maxHunger: 100,
-    tapPower: 1,
-    energyRegenRate: 1, // в секунду
-    lastWheelSpin: 0,
-    lastSave: 0,
-    hungerDecayRate: 0.1, // в секунду
-    lastHungerTick: Date.now()
+    coins: 0, // Обычные монеты
+    tapPower: 1, // Усилитель тапа
+    energy: 100, // Энергия
+    cooling: 100, // Охлаждение (сытость)
+    cyberCoins: 0, // Валюта доната
+    lastWheelSpin: 0, // Таймер колеса
 };
 
-// --- ЭФФЕКТЫ ДЛЯ ГОДА ИГРЫ (Математика удержания) ---
-// 1. Экспоненциальная инфляция цен
-function getCost(baseCost, level) {
-    // Формула: Цена = База * (1.15 ^ Уровень)
-    return Math.floor(baseCost * Math.pow(1.15, level));
-}
-
-// 2. Асимптотический прирост урона (убывающая полезность)
-function getTapPower(basePower, level) {
-    // Формула: Урон = База * (1 - e^(-0.05 * Уровень))
-    // Это не даст игроку уйти в бесконечный отрыв, сохраняя ценность каждого нового уровня
-    return Math.floor(basePower * (1 - Math.exp(-0.05 * level)));
-}
-
-// 3. Мягкий потолок энергии
-function getMaxEnergy(base, level) {
-    // Логарифмический рост, чтобы игрок не мог накопить бесконечную энергию за пару дней
-    return Math.floor(base + 20 * Math.log(level + 1));
-}
-
-// Глобальные данные магазина
+// Товары в магазине
 const shopItems = [
-    { id: 'tap_upgrade', name: 'Железный палец', cost: 50 },
-    // Остальные товары...
+    { type: 'power', name: 'Железный чип', cost: 50, effect: '+1 к силе' },
+    { type: 'food', name: 'Хакерский энергетик', cost: 30, effect: '+20 охлаждения' },
 ];
 
-document.addEventListener('DOMContentLoaded', () => {
-    let state;
-    
-    // Загрузка состояния из LocalStorage при загрузке страницы
-    const loadState = () => {
+// Загрузка данных из LocalStorage при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => loadState());
+
+function loadState() {
+    const savedData = localStorage.getItem('TapMaster');
+    if (savedData) {
         try {
-            const data = localStorage.getItem('TapMaster');
-            if (data) return JSON.parse(data);
-            else return {};
+            state = JSON.parse(savedData);
         } catch(e) {}
-        
-        return {}; // Возвращаем пустой объект по умолчанию
-    };
-
-    // Сохранение состояния каждые 3 секунды
-    setInterval(() => saveState(), 3000);
-
-    // Инициализация игры
-    state = loadState();
-    updateUI();
-});
-
-function openShop() {
-    // Проверка существования массива товаров
-    if (!Array.isArray(shopItems)) return; 
-
-    // Рендеринг товаров
-    const container = document.getElementById('shop-items');
-    container.innerHTML = '';
-
-    for (let item of shopItems) {
-        const el = document.createElement('div');
-        el.className = 'item';
-        el.textContent = `${item.name} — ${item.cost}`;
-        container.appendChild(el);
     }
+    updateUI(); // Отрисовка интерфейса
 }
 
-// --- Функции UI ---
-function updateUI() {
-    document.getElementById('coins').innerText = `Монеты: ${state.coins}`;
-    document.getElementById('energy').innerText = `Энергия: ${state.energy}/${state.maxEnergy}`;
-    document.getElementById('hunger').innerText = `Сытость: ${state.hunger}/${state.maxHunger}`;
-    document.getElementById('tap-value').innerText = `+${state.tapPower}`;
+function saveState() {
+    localStorage.setItem('TapMaster', JSON.stringify(state));
+}
+
+// Основной геймплей
+function tap() {
+    if (state.energy <= 0 || state.cooling <= 0) return;
+    state.coins += state.tapPower;
+    state.energy--;
+    updateUI();
+    saveState();
+}
+
+// Магазин
+function openShop() {
+    showModal();
+    renderShop();
+}
+
+function closeModal() {
+    document.getElementById('modal-overlay').style.display = 'none';
+    document.getElementById('modal-window').style.display = 'none';
 }
 
 function renderShop() {
     const container = document.getElementById('shop-items');
     container.innerHTML = '';
-    shopItems.forEach(item => {
-        const el = document.createElement('div');
-        el.className = 'item';
-        
-        let actionText = '';
-        if (item.type === 'power' || item.type === 'energy') {
-            actionText = `Ур. ${item.level} — Купить за ${getCost(item.cost, item.level)}`;
-        } else {
-            actionText = `Купить за ${item.cost}`;
+    
+    for (let item of shopItems) {
+        let btnText = 'Купить';
+        if (item.type === 'power') {
+            btnText = `Ур. ${Math.floor(state.tapPower)} → Купить`;
         }
 
-        el.innerHTML = `
-            <div>
+        const el = `
+            <div class="item">
                 <strong>${item.name}</strong><br>
-                <small>${item.desc}</small>
+                <small>${item.effect} (${item.cost})</small>
+                <button onclick="buyItem('${item.type}')"
+                        ${state.coins >= item.cost ? '' : 'disabled'}
+                >${btnText}</button>
             </div>
-            <button onclick="buyItem('${item.id}')">${actionText}</button>
         `;
-        container.appendChild(el);
+        container.insertAdjacentHTML('beforeend', el);
+    }
+}
+
+function buyItem(type) {
+    switch (type) {
+        case 'power':
+            if (state.coins >= 50) {
+                state.coins -= 50;
+                state.tapPower++;
+            }
+            break;
+        case 'food':
+            if (state.coins >= 30 && state.cooling < 100) {
+                state.coins -= 30;
+                state.cooling = Math.min(100, state.cooling + 20);
+            }
+            break;
+    }
+    updateUI();
+    saveState();
+}
+
+// Колесо Фортуны
+function spinWheel() {
+    const now = Date.now();
+    const diffMs = now - state.lastWheelSpin;
+    const secondsLeft = Math.max(0, 24 * 60 * 60 * 1000 - diffMs);
+
+    if (secondsLeft > 0) {
+        const hours = Math.floor(secondsLeft / (1000 * 60 * 60));
+        const mins = Math.floor((secondsLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((secondsLeft % (1000 * 60)) / 1000);
+        document.getElementById('wheel-timer').textContent =
+            `${hours.toString().padStart(2,'0')}:` +
+            `${mins.toString().padStart(2,'0')}:` +
+            `${secs.toString().padStart(2,'0')}`;
+        alert('Колесо еще крутится!');
+        return;
+    }
+
+    // Логика приза
+    const rewards = [50, 100, 200, 300, 500, 1000, 2000, 5000];
+    const reward = rewards[Math.floor(Math.random() * rewards.length)];
+    state.coins += reward;
+    state.lastWheelSpin = now;
+
+    alert(`Вы выиграли ${reward} монет!`);
+    updateUI();
+    saveState();
+}
+
+// ✅ Реализация казино
+function openCasino() {
+    showCasino();
+    // Переключаемся на первый режим
+    document.querySelectorAll('.game-mode').forEach(el => el.classList.remove('active'));
+    document.getElementById('slot-game').classList.add('active');
+}
+
+function closeCasino() {
+    hideCasino();
+}
+
+// Блокируем кнопку доступа к казино
+function updateUI() {
+    document.getElementById('coins').textContent = formatNumber(state.coins);
+    document.getElementById('energy-value').textContent = state.energy;
+    document.getElementById('energy-bar').value = state.energy;
+    document.getElementById('cooling-value').textContent = state.cooling;
+    document.getElementById('cooling-bar').value = state.cooling;
+    document.getElementById('cyber-coins').textContent = state.cyberCoins;
+
+    // Управление кнопкой казино
+    const casinoBtnContainer = document.getElementById('casino-btn-container');
+    if (state.cyberCoins > 0) {
+        casinoBtnContainer.innerHTML = `<button class="card" onclick="openCasino()">🎲 Казино</button>`;
+    } else {
+        casinoBtnContainer.textContent = 'Нет доступа к казино';
+    }
+
+    // Активация кнопок ставок
+    document.querySelectorAll('#modal-casino button').forEach(btn => {
+        const betAmount = Number(btn.dataset.amount);
+        btn.disabled = (betAmount > state.cyberCoins);
     });
 }
 
-// --- Игровая логика ---
-function tap() {
-    if (state.energy <= 0) {
-        showToast('Недостаточно энергии!');
-        return;
-    }
-    state.energy -= 1;
-    state.coins += state.tapPower;
-    updateUI();
-    saveGame();
+// Вспомогательные функции
+function formatNumber(n) {
+    return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
 }
 
-function buyItem(id) {
-    const item = shopItems.find(i => i.id === id);
-    if (!item) return;
+function showModal() {
+    document.getElementById('modal-overlay').style.display = 'block';
+    document.getElementById('modal-window').style.display = 'flex';
+}
+function hideModal() {
+    document.getElementById('modal-overlay').style.display = 'none';
+    document.getElementById('modal-window').style.display = 'none';
+}
 
-    let cost = item.cost;
-    if (item.type === 'power' || item.type === 'energy') {
-        cost = getCost(item.cost, item.level);
+function showCasino() {
+    document.getElementById('modal-casino-overlay').style.display = 'block';
+    document.getElementById('modal-casino').style.display = 'flex';
+}
+function hideCasino() {
+    document.getElementById('modal-casino-overlay').style.display = 'none';
+    document.getElementById('modal-casino').style.display = 'none';
+}
+
+// 🔥 Казино: логика режимов
+
+// Переключение между играми
+document.querySelectorAll('.mode-switcher a').forEach(link => {
+    link.onclick = e => {
+        e.preventDefault();
+        const target = link.dataset.target;
+        document.querySelectorAll('.game-mode').forEach(el => el.classList.remove('active'));
+        document.querySelector(target).classList.add('active');
+    };
+});
+
+// Нейронная сеть (слоты)
+const slotIcons = ['chip.png','matrix.png','neuron.png'];
+
+function playSlots(betAmount) {
+    if (!confirm(`Ставите ${betAmount}x кибермонет. Продолжить?`)) return;
+
+    state.cyberCoins -= betAmount;
+    updateUI();
+
+    // Генерация комбинации
+    const reels = [];
+    for(let i = 0; i < 3; i++) {
+        reels.push(slotIcons[Math.floor(Math.random() * slotIcons.length)]);
     }
 
-    if (state.coins >= cost) {
-        state.coins -= cost;
-        if (item.type === 'power') {
-            item.level++;
-            state.tapPower = getTapPower(item.baseValue, item.level);
-        }
-        if (item.type === 'energy') {
-            item.level++;
-            state.maxEnergy = getMaxEnergy(item.baseValue, item.level);
-            if (state.energy > state.maxEnergy) state.energy = state.maxEnergy;
-        }
-        if (item.type === 'hunger') {
-            state.hunger = Math.min(state.maxHunger, state.hunger + item.value);
-        }
-        showToast('Успешно!');
+    // Рисуем слоты
+    const ctx = document.getElementById('slots-canvas').getContext('2d');
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    const iconSize = 100;
+    for(let i = 0; i < 3; i++) {
+        const img = new Image();
+        img.src = reels[i]; // Тебе нужно положить эти картинки рядом с файлами
+        img.onload = () => {
+            ctx.drawImage(img, i*(iconSize+10), 20, iconSize, iconSize);
+        };
+    }
+
+    // Выигрыш
+    const isWin = reels[0] === reels[1] && reels[1] === reels[2];
+    if (isWin) {
+        const winMultiplier = [2, 5, 10][reels[0].indexOf('chip')] || 2;
+        const winnings = betAmount * 100 * winMultiplier;
+        state.coins += winnings;
+        alert(`Джекпот! x${winMultiplier}. Вы выиграли ${formatNumber(winnings)} монет.`);
+    } else {
+        alert('Не повезло.');
+    }
+    updateUI();
+}
+
+// Матрица случайности (Рулетка)
+function playRoulette(betAmount) {
+    if (!confirm(`Ставите ${betAmount}x кибермонет. Продолжить?`)) return;
+
+    state.cyberCoins -= betAmount;
+    updateUI();
+
+    // Анимация вращения
+    const wheel = document.querySelector('.segments');
+    wheel.style.animationDuration = '3s'; // Скорость
+    wheel.style.animationName = ''; // Очищаем для перезапуска
+    void wheel.offsetWidth; // Принудительный рефлоу
+    wheel.style.animationName = 'spin';
+
+    setTimeout(() => {
+        // Генерируем выигрыш после остановки анимации
+        const segments = Array.from(document.querySelectorAll('.segment'));
+        const randomIndex = Math.floor(Math.random() * segments.length);
+        const multiplier = parseInt(segments[randomIndex].classList[1].substring(1)); // Извлекаем множитель из класса
+
+        const winnings = betAmount * 100 * multiplier;
+        state.coins += winnings;
+        alert(`Ваше число выпало! x${multiplier}. Вы выиграли ${formatNumber(winnings)} монет.`);
         updateUI();
-        renderShop();
-        saveGame();
-    } else {
-        showToast('Недостаточно монет');
-    }
+    }, 3000);
 }
 
-// Колесо Фортуны (раз в сутки)
-function spinWheel() {
-    const now = Date.now();
-    const last = state.lastWheelSpin;
-    const diff = 24 * 60 * 60 * 1000 - (now - last);
+// Бинарный код (Блиц-игра)
+function startBlitzGame(betAmount) {
+    if (!confirm(`Ставите ${betAmount}x кибермонет. Продолжить?`)) return;
 
-    if (now - last < 24 * 60 * 60 * 1000) {
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((diff % (1000 * 60)) / 1000);
-        showToast(`Следующий спин через ${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
-        return;
-    }
-
-    state.lastWheelSpin = now;
-    const rewards = [
-        { type: 'coins', value: Math.floor(Math.random() * 500) + 100 },
-        { type: 'energy', value: Math.floor(Math.random() * 30) + 20 },
-        { type: 'hunger', value: Math.floor(Math.random() * 30) + 20 },
-        { type: 'lucky', value: 'Редкий буст x2 на 1 час' }
-    ];
-    const reward = rewards[Math.floor(Math.random() * rewards.length)];
-    
-    if (reward.type === 'coins') state.coins += reward.value;
-    if (reward.type === 'energy') state.energy = Math.min(state.maxEnergy, state.energy + reward.value);
-    if (reward.type === 'hunger') state.hunger = Math.min(state.maxHunger, state.hunger + reward.value);
-
-    showToast(`Вы получили: ${reward.value} ${reward.type}`);
-    updateUI();
-    saveGame();
-}
-
-// --- Математика времени (Голод и Энергия) ---
-function gameLoop() {
-    const now = Date.now();
-    const delta = (now - state.lastHungerTick) / 1000; // в секундах
-
-    // Расход сытости
-    state.hunger = Math.max(0, state.hunger - (state.hungerDecayRate * delta));
-    
-    // Если голоден — энергия не восстанавливается
-    if (state.hunger > 0) {
-        state.energy = Math.min(state.maxEnergy, state.energy + (state.energyRegenRate * delta));
-    }
-
-    state.lastHungerTick = now;
-
-    // Обновление таймера колеса
-    const wheelTimer = document.getElementById('wheel-timer');
-    const diff = state.lastWheelSpin + 24 * 60 * 60 * 1000 - now;
-    if (diff > 0) {
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((diff % (1000 * 60)) / 1000);
-        wheelTimer.innerText = `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    } else {
-        wheelTimer.innerText = 'ГОТОВО';
-    }
-
+    state.cyberCoins -= betAmount;
     updateUI();
 
-    // Автосохранение раз в 10 секунд
-    if (now - state.lastSave > 10000) {
-        saveGame();
-        state.lastSave = now;
+    // Создаем бесконечный поток кода
+    const codeEl = document.getElementById('binary-code');
+    codeEl.textContent = generateBinaryCode(1000);
+
+    // Задача: поймать паттерн
+    const pattern = '11111';
+    const input = prompt(`Найдите последовательность "${pattern}" в потоке бинарного кода выше. Введите её позицию (от 1):`);
+    if (input !== null) {
+        const pos = parseInt(input);
+        const codeStr = codeEl.textContent;
+        if (pos > 0 && codeStr.includes(pattern, pos - 1)) {
+            const winnings = betAmount * 100 * 5;
+            state.coins += winnings;
+            alert(`Верно! Вы выиграли ${formatNumber(winnings)} монет.`);
+        } else {
+            alert('Ошибка поиска.');
+        }
+        updateUI();
     }
 }
 
-// --- Сохранение и загрузка ---
-function saveGame() {
-    localStorage.setItem('tapmaster_state', JSON.stringify(state));
-}
-
-function loadGame() {
-    const data = localStorage.getItem('tapmaster_state');
-    if (data) {
-        state = JSON.parse(data);
-        // Пересчитываем динамические значения при загрузке
-        state.tapPower = getTapPower(shopItems[0].baseValue, shopItems[0].level);
-        state.maxEnergy = getMaxEnergy(shopItems[1].baseValue, shopItems[1].level);
+function generateBinaryCode(length) {
+    let str = '';
+    while(str.length < length) {
+        str += Math.round(Math.random()).toString();
     }
+    return str;
 }
-
-// --- Вспомогательные функции ---
-function showToast(msg) {
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerText = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2000);
-}
-
-function openShop() {
-    document.getElementById('shopModal').style.display = 'block';
-    renderShop();
-}
-function closeShop() {
-    document.getElementById('shopModal').style.display = 'none';
-}
-function openCasino() {
-    showToast('Казино в разработке. Ставь все на зеро!');
-}
-
-// --- Инициализация ---
-document.getElementById('tapBtn').addEventListener('click', tap);
-loadGame();
-updateUI();
-renderShop();
-setInterval(gameLoop, 1000); // 1 раз в секунду
