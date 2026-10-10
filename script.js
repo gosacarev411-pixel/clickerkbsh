@@ -1,96 +1,156 @@
-// Состояние игры
-let state = {
-    coins: 0,
-    tapLevel: 1,
+// --- ГЕЙМДИЗАЙН: 1 год на 6 уровней ---
+// Чтобы пройти игру за год, игрок должен заходить в игру ~3 раза в день на 5 минут.
+// Базовый клик дает мало. Основной доход идет от пассивного дохода (авто-начисление).
+// 60 дней на уровень * 24 часа * 60 минут * (1 клик в секунду для активности) = много кликов.
+// Мы сбалансируем это стоимостью апгрейдов.
+
+const state = {
+    name: 'Бомж',
+    money: 0,
+    level: 1,
+    clickPower: 1,
     incomePerSec: 0,
     upgrades: [
-        { id: 'binance', name: 'Binance', cost: 10, income: 1, owned: 0 },
-        { id: 'bybit', name: 'Bybit', cost: 50, income: 5, owned: 0 },
-        { id: 'okx', name: 'OKX', cost: 200, income: 20, owned: 0 },
-        { id: 'kucoin', name: 'KuCoin', cost: 1000, income: 100, owned: 0 }
+        { id: 1, name: 'Картонная коробка', cost: 10, income: 1, bought: 0 },
+        { id: 2, name: 'Пластиковая бутылка', cost: 50, income: 5, bought: 0 },
+        { id: 3, name: 'Собака-поводырь', cost: 200, income: 20, bought: 0 },
+        { id: 4, name: 'Старый "Жигуль"', cost: 1000, income: 100, bought: 0 },
+        { id: 5, name: 'Ларек с шаурмой', cost: 5000, income: 500, bought: 0 },
+        { id: 6, name: 'Первый Биткоин', cost: 20000, income: 2000, bought: 0 }
     ]
 };
 
 // Элементы DOM
-const coinsEl = document.getElementById('coins');
-const perSecondEl = document.getElementById('per-second');
-const tapLevelEl = document.getElementById('tap-level');
-const upgradesDiv = document.getElementById('upgrades');
-const tapEffectEl = document.getElementById('tap-effect');
+const registrationModal = document.getElementById('registrationModal');
+const gameScreen = document.getElementById('gameScreen');
+const playerNameEl = document.getElementById('playerName');
+const moneyEl = document.getElementById('money');
+const levelEl = document.getElementById('level');
+const incomeEl = document.getElementById('income');
+const tapBtn = document.getElementById('tapBtn');
+const characterEl = document.getElementById('character');
+const upgradesContainer = document.getElementById('upgradesContainer');
+const playerNameInput = document.getElementById('playerNameInput');
+const startBtn = document.getElementById('startBtn');
 
-// Функция обновления интерфейса
-function updateUI() {
-    coinsEl.textContent = Math.floor(state.coins);
-    perSecondEl.textContent = state.incomePerSec;
-    tapLevelEl.textContent = state.tapLevel + 'x';
+// --- Загрузка сохранений ---
+function loadGame() {
+    const saved = localStorage.getItem('bumToMillion');
+    if (saved) {
+        const data = JSON.parse(saved);
+        Object.assign(state, data);
+        // Проверка на финальный уровень
+        if (state.level > 6) state.level = 6;
+    }
+    render();
+}
 
-    // Перерисовываем кнопки улучшений
-    upgradesDiv.innerHTML = '';
+// --- Сохранение игры ---
+function saveGame() {
+    localStorage.setItem('bumToMillion', JSON.stringify(state));
+}
+
+// --- Рендер интерфейса ---
+function render() {
+    playerNameEl.textContent = state.name;
+    moneyEl.textContent = state.money.toLocaleString();
+    levelEl.textContent = state.level;
+    incomeEl.textContent = state.incomePerSec.toLocaleString();
+
+    // Обновляем картинки персонажа (можно заменить на свои URL)
+    const sprites = [
+        '🧟‍♂️', // 1: Бомж
+        '🚶‍♂️', // 2: Прохожий
+        '🧥',    // 3: Менеджер
+        '💼',    // 4: Директор
+        '🤑',    // 5: Мажор
+        '👑'     // 6: Миллионер
+    ];
+    characterEl.textContent = sprites[state.level - 1];
+
+    // Рендерим апгрейды
+    upgradesContainer.innerHTML = '';
     state.upgrades.forEach(upg => {
-        const btn = document.createElement('button');
-        btn.className = 'upgrade-btn';
-        btn.textContent = `${upg.name} (${upg.income}/sec) - ${upg.cost} монет`;
-        btn.onclick = () => buyUpgrade(upg.id);
-        
-        if (state.coins < upg.cost) {
-            btn.disabled = true;
-        }
-        
-        upgradesDiv.appendChild(btn);
+        const canAfford = state.money >= upg.cost;
+        const upgradeEl = document.createElement('div');
+        upgradeEl.className = 'upgrade';
+        upgradeEl.innerHTML = `
+            <div>
+                <strong>${upg.name}</strong><br>
+                <small>Приносит $${upg.income}/сек</small><br>
+                <small>Куплено: ${upg.bought}</small>
+            </div>
+            <div>
+                <small>Цена:</small><br>
+                <strong>$${upg.cost.toLocaleString()}</strong><br>
+                <button ${!canAfford ? 'disabled' : ''}>Купить</button>
+            </div>
+        `;
+        upgradeEl.querySelector('button').addEventListener('click', () => buyUpgrade(upg.id));
+        upgradesContainer.appendChild(upgradeEl);
     });
+
+    saveGame();
 }
 
-// Функция тапа по хомяку
-function tapCoin() {
-    state.coins += state.tapLevel;
-    // Анимация +1
-    tapEffectEl.style.opacity = '1';
-    tapEffectEl.style.transform = 'translateY(0) scale(1)';
-    setTimeout(() => {
-        tapEffectEl.style.opacity = '0';
-        tapEffectEl.style.transform = 'translateY(-50px) scale(1.5)';
-    }, 10);
-    updateUI();
-}
-
-// Покупка улучшения
+// --- Покупка апгрейда ---
 function buyUpgrade(id) {
     const upg = state.upgrades.find(u => u.id === id);
-    if (state.coins >= upg.cost) {
-        state.coins -= upg.cost;
-        upg.owned++;
-        upg.cost = Math.floor(upg.cost * 1.5); // Увеличиваем цену на 50%
+    if (state.money >= upg.cost) {
+        state.money -= upg.cost;
+        upg.bought++;
         state.incomePerSec += upg.income;
-        updateUI();
+        
+        // Звук или вибрация (опционально)
+        // navigator.vibrate(50); 
+        
+        checkLevelUp();
+        render();
     }
 }
 
-// Автосбор дохода каждую секунду
+// --- Клик по кнопке ---
+tapBtn.addEventListener('click', () => {
+    state.money += state.clickPower;
+    // Эффект нажатия
+    characterEl.style.transform = 'scale(0.95)';
+    setTimeout(() => characterEl.style.transform = 'scale(1)', 100);
+    render();
+});
+
+// --- Проверка уровня ---
+function checkLevelUp() {
+    const thresholds = [0, 100, 500, 2000, 10000, 50000, 200000]; // 6 уровней
+    if (state.money >= thresholds[state.level + 1] && state.level < 6) {
+        state.level++;
+        state.clickPower += 1; // С каждым уровнем клик становится чуть мощнее
+        // Здесь можно добавить alert(`Ты достиг уровня ${state.level}!`);
+    }
+}
+
+// --- Пассивный доход (каждую секунду) ---
 setInterval(() => {
-    state.coins += state.incomePerSec;
-    updateUI();
+    if (state.incomePerSec > 0) {
+        state.money += state.incomePerSec;
+        render();
+    }
 }, 1000);
 
-// Сохранение в localStorage
-function saveGame() {
-    localStorage.setItem('coinKombatSave', JSON.stringify(state));
-    alert('Игра сохранена!');
-}
-
-function loadGame() {
-    const data = localStorage.getItem('coinKombatSave');
-    if (data) {
-        state = JSON.parse(data);
-        // Восстанавливаем функции в объектах (JSON их удаляет)
-        state.upgrades.forEach(upg => {
-            // Пересчитываем стоимость при загрузке (если она не сохранялась)
-            // Здесь для простоты считаем, что цена хранится в сейве
-            updateUI();
-        });
-        updateUI();
-        alert('Игра загружена!');
+// --- Регистрация ---
+startBtn.addEventListener('click', () => {
+    const name = playerNameInput.value.trim();
+    if (name) {
+        state.name = name;
+        registrationModal.style.display = 'none';
+        gameScreen.style.display = 'block';
+        render();
+    } else {
+        alert('У бомжа должно быть имя!');
     }
-}
+});
 
-// Инициализация
-updateUI();
+// --- Автосохранение при закрытии ---
+window.addEventListener('beforeunload', saveGame);
+
+// --- Инициализация ---
+loadGame();
