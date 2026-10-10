@@ -9,44 +9,49 @@
 <div class="game-container">
     <!-- Верхняя панель -->
     <div class="header">
-        <h2 id="playerName">Бомж</h2>
-        <span>Деньги: $<span id="money"></span></span>
-        <span>Доход: $<span id="incomePerSec"></span>/сек</span>
-        <button id="wheelBtn"><i class="fa-solid fa-gift"></i> Колесо Фортуны</button>
-        <button id="shopBtn"><i class="fa-solid fa-store"></i> Магазин</button>
+        <h1 id="playerName">Бомж</h1>
+        <div class="stats">
+            <span>Деньги: $<span id="money">0</span></span>
+            <span>Доход: $<span id="income">0</span>/сек</span>
+            <span>Уровень: <span id="level">1</span></span>
+        </div>
     </div>
 
-    <!-- Основная зона -->
-    <div class="main-area">
-        <div class="character" id="character">
-            🧟‍♂️
+    <!-- Меню навигации -->
+    <nav>
+        <button data-page="main">Главная</button>
+        <button data-page="shop">Магазин</button>
+        <button data-page="wheel">Колесо Фортуны</button>
+    </nav>
+
+    <!-- Контентные секции -->
+    
+    <section id="page-main" class="active">
+        <div class="character">
+            <!-- Здесь картинка вместо эмодзи -->
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMzYgNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiPgogICAgPGcgZmlsbC1ydWxlPSJldmVub2RkIj4KICAgICAgICA8cmVjdCBmaWxsPSIjRTlFRjU2IiB4PSItMSIgdy09IjMyIiBoZWlnaHQ9IjQxIi8+CgkJCQk8cGF0aCBmaWxsPSIjRUZFNTYxIiBkPSJNNSAxOS41TDEuNSAyNEgyLjVDMi41IDIzIDEgMjMuNSAxIDI1SDQuNVYyNC41TDUgMTkuNUwyLjUgMTcuNVoiLz4KICAgICAgICA8cGF0aCBmaWxsPSIjREZGODA4IiBkPSJNMTAuNSAzMEgxMC41di0xSDEwLjV2LTEuNWgtNi41djEuNkgxMC41eiIvPgoJCQk8cGF0aCBmaWxsPSIjRDNGODBEIiBkPSJNMTYuNSAzMGgtNi41di0xSDE2LjVoLTguNXYtMS41aDYuNXptMCAtMXoiLz4KICAgICAgICA8cGF0aCBmaWxsPSIjRERGODBEIiBkPSJNMTYuNSAyOHYtMS41aC02LjV2MS41em0wIC0xeiIvPgoJCQk8cGF0aCBmaWxsPSIjRURGRjU2IiBkPSJNMTAuNSAyOFYyNy41aC02LjV2MS41aDYuNXptMCAtMXoiLz4KICAgICAgICA8cGF0aCBmaWxsPSIjRURGRjU2IiBkPSJNNSAyOC41aDYuNXYtMS41SDEwLjVsLS41IDAuNWgtNi41di41ek0xMC41IDI3aC02LjV2MS41aDYuNHoiLz4KICAgICAgICA8cGF0aCBmaWxsPSIjRkZGMUYxIiBkPSJNNSAyNWEyIDIgMCAxIDAgNC4xMUwxNS41IDI1YTQgNCAwIDAgMSAtNC4xMS00LjExWiIvPgoJCTwvZz4KPC9zdmc+Cg==" alt="Бомж">
         </div>
+        
         <div class="tap-zone">
             <button id="tapBtn" class="tap-button">КЛИКНУТЬ</button>
             <p>чтобы заработать на банку тушенки</p>
         </div>
-    </div>
+    </section>
 
-    <!-- Модальное окно магазина -->
-    <div id="shopModal" class="modal hidden">
-        <div class="modal-content">
-            <h3><i class="fa-solid fa-store"></i> Подворотные апгрейды</h3>
-            <div id="upgradesContainer"></div>
-            <button id="closeShopBtn">Закрыть магазин</button>
-        </div>
-    </div>
+    <section id="page-shop">
+        <h2>Подворотные апгрейды</h2>
+        <ul id="upgradesContainer"></ul>
+    </section>
 
-    <!-- Модальное окно колеса фортуны -->
-    <div id="wheelModal" class="modal hidden">
-        <div class="modal-content wheel-modal">
-            <h3><i class="fa-solid fa-gift"></i> Колесо Фортуны</h3>
-            <canvas id="wheelCanvas" width="400" height="400"></canvas>
-            <button id="spinWheelBtn" disabled>Вращать!</button>
-            <small>Вы можете крутить колесо только один раз каждые 24 часа.</small>
+    <section id="page-wheel">
+        <h2>Колесо Фортуны</h2>
+        <div id="wheel-info">
+            <p>Раз в 24 часа вы можете провернуть Колесо.</p>
+            <p><strong>Следующий шанс:</strong> <span id="nextSpinTime">...</span></p>
         </div>
-    </code>
+        <button id="spinWheelBtn" disabled>Провернуть колесо!</button>
+    </section>
 </div>
-<script src="https://kit.fontawesome.com/695f7c9ebe.js" crossorigin="anonymous"></script>
 <script src="code.js"></script>
 </body>
 </html>
