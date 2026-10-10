@@ -2,49 +2,115 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>TapMaster</title>
+    <title>TapMaster: Год в сети</title>
+    <!-- Подключаем Telegram SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="cyber-gradient">
+<div id="app">
     <!-- Хедер -->
-    <header class="header">
-        <h1 class="logo">🔹 TapMaster</h1>
-        <div class="stats">
-            <span><b>Монеты:</b> <span id="coins"></span></span>
-            <span><b>Энергия:</b> <span id="energy"></span>/100</span>
-            <span><b>Сытость:</b> <span id="hunger"></span>%</span>
+    <header>
+        <h1>🎮 TapMaster</h1>
+        <div class="status-panel">
+            <span><b>Монеты:</b> <span id="coins">0</span></span>
+            <progress max="100" value="100" id="energy-bar"></progress>
+            <span><b>Энергия:</b> <span id="energy-value">100/100</span></span>
+            <progress max="100" value="100" id="cooling-bar"></progress>
+            <span><b>Охлаждение:</b> <span id="cooling-value">100%</span></span>
+            <span><b>Кибермонеты:</b> <span id="cyber-coins">0</span></span>
         </div>
     </header>
 
-    <!-- Основная зона тапа -->
-    <main class="main">
-        <button class="tap-btn" onclick="tap()">
-            ТАП!
-            <span class="tap-value">+1</span>
+    <!-- Основная зона действия -->
+    <main>
+        <!-- Главная кнопка -->
+        <button class="tap-btn cyber-effect" onclick="tap()">
+            ⚡️ Хакнуть узел!
         </button>
-
-        <!-- Карточки действий -->
+        
+        <!-- Секция действий -->
         <section class="action-cards">
             <button class="card" onclick="openShop()">
                 Магазин<br>Улучшения и еда
             </button>
+            
+            <!-- Динамическая кнопка Казино -->
+            <div id="casino-btn-container"></div>
+
             <button class="card" onclick="spinWheel()">
                 Колесо Фортуны<br>Готово через:<br><span id="wheel-timer">24:00:00</span>
-            </button>
-            <button class="card" onclick="openCasino()">
-                Казино<br>Рискни монетами
-            </button>
+            </div>
         </section>
     </main>
 
     <!-- Модальное окно магазина -->
     <div id="modal-overlay" style="display:none;"></div>
-    <div id="modal-window" style="display:none;">
+    <div id="modal-window" style="display:none;" class="shop-modal">
+        <span class="close" onclick="closeModal()">&times;</span>
         <h2>Магазин</h2>
+        <p>Здесь вы можете купить улучшения или восстановить ресурсы.</p>
         <div id="shop-items"></div>
-        <button onclick="closeModal()">Закрыть</button>
     </div>
 
-    <script src="code.js"></script>
+    <!-- Модальное окно казино -->
+    <div id="modal-casino-overlay" style="display:none;"></div>
+    <div id="modal-casino" style="display:none;" class="casino-modal">
+        <span class="close" onclick="closeCasino()">&times;</span>
+        <h2>🎲 Cyber Casino</h2>
+        <p>Ставьте кибермонеты, выигрывайте обычные!</p>
+
+        <!-- Режим "Нейронная сеть" (слоты) -->
+        <div id="slot-game" class="game-mode active">
+            <canvas width="360" height="150" id="slots-canvas"></canvas>
+            <div class="controls">
+                <button onclick="playSlots(1)" disabled>Spin x1</button>
+                <button onclick="playSlots(10)" disabled>Spin x10</button>
+            </div>
+        </div>
+
+        <!-- Режим "Матрица случайности" (рулетка) -->
+        <div id="roulette-game" class="game-mode">
+            <div class="wheel">
+                <div class="pointer"></div>
+                <div class="segments">
+                    <div class="segment x10"></div>
+                    <div class="segment x2"></div>
+                    <div class="segment x1"></div>
+                    <div class="segment x1"></div>
+                    <div class="segment x5"></div>
+                    <div class="segment x1"></div>
+                    <div class="segment x1"></div>
+                    <div class="segment x20"></div>
+                    <div class="segment x1"></div>
+                    <div class="segment x1"></div>
+                </div>
+            </div>
+            <div class="controls">
+                <button onclick="playRoulette(1)" disabled>Spin Wheel x1</button>
+                <button onclick="playRoulette(10)" disabled>Spin Wheel x10</button>
+            </div>
+        </div>
+
+        <!-- Режим "Бинарный код" (блиц-игра) -->
+        <div id="blitz-game" class="game-mode">
+            <div class="code-screen">
+                <pre id="binary-code"></pre>
+            </div>
+            <div class="controls">
+                <button onclick="startBlitzGame(1)" disabled>Start Blitz x1</button>
+                <button onclick="startBlitzGame(10)" disabled>Start Blitz x10</button>
+            </div>
+        </div>
+
+        <!-- Навигация по режимам -->
+        <nav class="mode-switcher">
+            <a href="#" data-target="#slot-game">Нейронная сеть</a>
+            <a href="#" data-target="#roulette-game">Матрица случайности</a>
+            <a href="#" data-target="#blitz-game">Бинарный код</a>
+        </nav>
+    </div>
+</div>
+<script src="code.js"></script>
 </body>
 </html>
