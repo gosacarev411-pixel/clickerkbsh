@@ -2,48 +2,51 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Путь от бомжа до миллионера</title>
+    <title>От бомжа до миллионера</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Модальное окно регистрации -->
-    <div id="registrationModal" class="modal">
+<div class="game-container">
+    <!-- Верхняя панель -->
+    <div class="header">
+        <h2 id="playerName">Бомж</h2>
+        <span>Деньги: $<span id="money"></span></span>
+        <span>Доход: $<span id="incomePerSec"></span>/сек</span>
+        <button id="wheelBtn"><i class="fa-solid fa-gift"></i> Колесо Фортуны</button>
+        <button id="shopBtn"><i class="fa-solid fa-store"></i> Магазин</button>
+    </div>
+
+    <!-- Основная зона -->
+    <div class="main-area">
+        <div class="character" id="character">
+            🧟‍♂️
+        </div>
+        <div class="tap-zone">
+            <button id="tapBtn" class="tap-button">КЛИКНУТЬ</button>
+            <p>чтобы заработать на банку тушенки</p>
+        </div>
+    </div>
+
+    <!-- Модальное окно магазина -->
+    <div id="shopModal" class="modal hidden">
         <div class="modal-content">
-            <h2>Добро пожаловать в подворотню</h2>
-            <p>Как тебя звать, новенький?</p>
-           <input type="text" id="playerNameInput" placeholder="Например: Толян" maxlength="15">
-<button id="startBtn">Начать путь</button>
-        </div>
-    </div>
-
-    <!-- Основной экран игры -->
-    <div id="gameScreen">
-        <div class="header">
-            <h1 id="playerName">Бомж</h1>
-            <div class="stats">
-                <span>Уровень: <span id="level">1</span></span>
-                <span>Деньги: $<span id="money">0</span></span>
-                <span>Доход: $<span id="income">0</span>/сек</span>
-            </div>
-        </div>
-
-        <div class="main-area">
-            <div class="character" id="character">
-                🧟‍♂️
-            </div>
-            <div class="tap-zone">
-                <button id="tapBtn" class="tap-button">КЛИКНУТЬ</button>
-                <p>чтобы заработать на банку тушенки</p>
-            </div>
-        </div>
-
-        <div class="shop">
-            <h3>Подворотные апгрейды</h3>
+            <h3><i class="fa-solid fa-store"></i> Подворотные апгрейды</h3>
             <div id="upgradesContainer"></div>
+            <button id="closeShopBtn">Закрыть магазин</button>
         </div>
     </div>
 
-    <script src="code.js"></script>
+    <!-- Модальное окно колеса фортуны -->
+    <div id="wheelModal" class="modal hidden">
+        <div class="modal-content wheel-modal">
+            <h3><i class="fa-solid fa-gift"></i> Колесо Фортуны</h3>
+            <canvas id="wheelCanvas" width="400" height="400"></canvas>
+            <button id="spinWheelBtn" disabled>Вращать!</button>
+            <small>Вы можете крутить колесо только один раз каждые 24 часа.</small>
+        </div>
+    </code>
+</div>
+<script src="https://kit.fontawesome.com/695f7c9ebe.js" crossorigin="anonymous"></script>
+<script src="code.js"></script>
 </body>
 </html>
