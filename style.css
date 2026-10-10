@@ -1,142 +1,98 @@
-:root {
-    --bg: #1a1a2e;
-    --card: #16213e;
-    --primary: #0096c7;
-    --accent: #e63946;
-    --text: #f1faee;
-}
-
+/* Общие стили */
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
 body {
-    background-color: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: #1a1c26;
+    color: #fff;
+    text-align: center;
 }
 
-.container {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-header {
+/* Header */
+.header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    backdrop-filter: blur(10px); /* Эффект размытия */
+}
+.logo {
+    font-size: 1.7em;
+    letter-spacing: -1px;
+}
+.stats span {
+    display: inline-block;
+    width: calc(33% - 10px);
+    margin-right: 10px;
 }
 
-.user-stats {
-    display: flex;
-    gap: 15px;
-    font-size: 14px;
-}
-
-.tap-zone {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
-.tap-button {
-    width: 150px;
-    height: 150px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
+/* Кнопка тапа */
+.tap-btn {
+    --size: 15vw;
+    min-width: var(--size);
+    height: var(--size);
+    max-height: 20vh;
     border-radius: 50%;
-    margin: 0 auto 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 0 20px rgba(0, 150, 199, 0.4);
-    transition: transform 0.1s;
     user-select: none;
+    transition: transform 0.1s ease-in-out;
+    background-image: linear-gradient(to right bottom, #f44336, #e91e63, #9c27b0);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.3), 0 5px 15px rgba(0,0,0,0.2);
 }
-
-.tap-button:active {
+.tap-btn:active {
     transform: scale(0.95);
 }
-
-#tap-value {
-    font-size: 20px;
+.tap-value {
     opacity: 0;
-    transition: opacity 0.3s;
+    animation: showValue 0.5s forwards;
+}
+@keyframes showValue {
+    to {opacity: 1;}
 }
 
-.features {
+/* Карточки действий */
+.action-cards {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 1rem;
+    margin-top: 1rem;
 }
-
-.feature-card {
-    background-color: var(--card);
-    padding: 20px;
-    border-radius: 15px;
-    text-align: center;
+.card {
+    padding: 1rem;
+    border-radius: 1rem;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.feature-card:hover {
-    transform: translateY(-5px);
+    background-image: linear-gradient(to bottom, #2d3436, #34495e);
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    line-height: 1.2;
+}
+#wheel-timer {
+    color: #ffeb3b;
 }
 
-/* Модальное окно */
-.modal {
-    display: none;
+/* Магазин */
+#modal-overlay {
     position: fixed;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.7);
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
 }
-
-.modal-content {
-    background-color: var(--card);
-    margin: 15% auto;
-    padding: 30px;
-    border-radius: 15px;
+#modal-window {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
     width: 90%;
-    position: relative;
+    max-width: 400px;
+    padding: 1.5rem;
+    background: #212121;
+    border-radius: 1rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
 }
-
-.close {
-    position: absolute;
-    right: 20px;
-    top: 15px;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close:hover {
-    color: var(--accent);
-}
-
-#shop-items {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.item {
-    background-color: var(--bg);
-    padding: 15px;
-    border-radius: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid var(--primary);
+#shop-items .item {
+    display: block;
+    padding: 0.5rem;
+    border-bottom: 1px solid #444;
 }
