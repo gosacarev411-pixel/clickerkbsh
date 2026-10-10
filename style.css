@@ -136,10 +136,12 @@ body {
 
 /* Магазин */
 .shop {
+    max-width: 100%; /* <--- Добавь эту строку */
     background: #0f3460;
     padding: 20px;
     border-radius: 15px;
     border: 2px solid #e94560;
+}
 }
 
 .shop h3 {
