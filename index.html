@@ -2,52 +2,49 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TapMaster: Год в одной тапалке</title>
+    <title>TapMaster</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>TapMaster</h1>
-            <div class="user-stats">
-                <span id="coins">Монеты: 0</span>
-                <span id="energy">Энергия: 100/100</span>
-                <span id="hunger">Сытость: 100/100</span>
-            </div>
-        </header>
-
-        <main>
-            <section class="tap-zone">
-                <div class="tap-button" id="tapBtn">ТАП</div>
-                <p id="tap-value">+1</p>
-            </section>
-
-            <section class="features">
-                <div class="feature-card" onclick="openShop()">
-                    <h3>Магазин</h3>
-                    <p>Улучшения и еда</p>
-                </div>
-                <div class="feature-card" onclick="openCasino()">
-                    <h3>Казино</h3>
-                    <p>Рискни монетами</p>
-                </div>
-                <div class="feature-card" onclick="spinWheel()">
-                    <h3>Колесо Фортуны</h3>
-                    <p>Готово через: <span id="wheel-timer">24:00:00</span></p>
-                </div>
-            </section>
-        </main>
-
-        <div id="shopModal" class="modal">
-            <div class="modal-content">
-                <span class="close" onclick="closeShop()">&times;</span>
-                <h2>Магазин</h2>
-                <div id="shop-items"></div>
-            </div>
+    <!-- Хедер -->
+    <header class="header">
+        <h1 class="logo">🔹 TapMaster</h1>
+        <div class="stats">
+            <span><b>Монеты:</b> <span id="coins"></span></span>
+            <span><b>Энергия:</b> <span id="energy"></span>/100</span>
+            <span><b>Сытость:</b> <span id="hunger"></span>%</span>
         </div>
+    </header>
+
+    <!-- Основная зона тапа -->
+    <main class="main">
+        <button class="tap-btn" onclick="tap()">
+            ТАП!
+            <span class="tap-value">+1</span>
+        </button>
+
+        <!-- Карточки действий -->
+        <section class="action-cards">
+            <button class="card" onclick="openShop()">
+                Магазин<br>Улучшения и еда
+            </button>
+            <button class="card" onclick="spinWheel()">
+                Колесо Фортуны<br>Готово через:<br><span id="wheel-timer">24:00:00</span>
+            </button>
+            <button class="card" onclick="openCasino()">
+                Казино<br>Рискни монетами
+            </button>
+        </section>
+    </main>
+
+    <!-- Модальное окно магазина -->
+    <div id="modal-overlay" style="display:none;"></div>
+    <div id="modal-window" style="display:none;">
+        <h2>Магазин</h2>
+        <div id="shop-items"></div>
+        <button onclick="closeModal()">Закрыть</button>
     </div>
+
     <script src="code.js"></script>
 </body>
 </html>
