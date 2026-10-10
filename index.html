@@ -3,35 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Путь от бомжа до миллионера</title>
+    <title>Coin Kombat</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Путь от бомжа до миллионера</h1>
+    <div class="game-container">
+        <h1>Coin Kombat</h1>
         
         <div class="stats">
-            <div>Деньги: <span id="money">10</span> $</div>
-            <div>Энергия: <span id="energy">100</span> %</div>
-            <div>Настроение: <span id="mood">100</span> %</div>
-            <div>День: <span id="day">1</span></div>
+            <div>Монеты: <span id="coins">0</span></div>
+            <div>Доход в секунду: <span id="per-second">0</span></div>
+            <div>Уровень тапа: <span id="tap-level">1</span>x</div>
         </div>
 
-        <div id="story" class="story-box">
-            Ты просыпаешься на скамейке в парке. В кармане 10 долларов. Пора что-то менять.
+        <div class="click-area" onclick="tapCoin()">
+            <span id="tap-effect" class="tap-effect">+1</span>
+            <img src="https://i.imgur.com/7XhZ0yR.png" alt="Tap the hamster" class="click-img">
         </div>
 
-        <div class="actions" id="actions">
-            <button onclick="work('busker')">Играть на гитаре в метро (5$, -10 энергии)</button>
-            <button onclick="work('bottle')">Сдавать бутылки (-20 энергии)</button>
+        <h2>Улучшить доход</h2>
+        <div class="upgrades" id="upgrades">
+            <!-- Биржи будут добавляться сюда скриптом -->
         </div>
 
-        <div class="actions" id="high-risk" style="display: none;">
-            <button onclick="gamble('casino')">Сходить в подпольное казино (риск)</button>
-            <button onclick="work('taxi')">«Побомбить» на старой машине (требует 50$ на бензин)</button>
-    </div>
-
-        <button onclick="nextDay()" id="sleep-btn" style="display: none;">Закончить день и поспать</button>
+        <div class="save-load">
+            <button onclick="saveGame()">Сохранить</button>
+            <button onclick="loadGame()">Загрузить</button>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
