@@ -1,156 +1,232 @@
-// --- ГЕЙМДИЗАЙН: 1 год на 6 уровней ---
-// Чтобы пройти игру за год, игрок должен заходить в игру ~3 раза в день на 5 минут.
-// Базовый клик дает мало. Основной доход идет от пассивного дохода (авто-начисление).
-// 60 дней на уровень * 24 часа * 60 минут * (1 клик в секунду для активности) = много кликов.
-// Мы сбалансируем это стоимостью апгрейдов.
+// Инициализация Telegram SDK
+const tg = window.Telegram.WebApp;
+tg.expand();
 
-const state = {
-    name: 'Бомж',
-    money: 0,
-    level: 1,
-    clickPower: 1,
-    incomePerSec: 0,
-    upgrades: [
-        { id: 1, name: 'Картонная коробка', cost: 10, income: 1, bought: 0 },
-        { id: 2, name: 'Пластиковая бутылка', cost: 50, income: 5, bought: 0 },
-        { id: 3, name: 'Собака-поводырь', cost: 200, income: 20, bought: 0 },
-        { id: 4, name: 'Старый "Жигуль"', cost: 1000, income: 100, bought: 0 },
-        { id: 5, name: 'Ларек с шаурмой', cost: 5000, income: 500, bought: 0 },
-        { id: 6, name: 'Первый Биткоин', cost: 20000, income: 2000, bought: 0 }
-    ]
+// --- Глобальные переменные состояния ---
+let state = {
+    coins: 0,
+    energy: 100,
+    maxEnergy: 100,
+    hunger: 100,
+    maxHunger: 100,
+    tapPower: 1,
+    energyRegenRate: 1, // в секунду
+    lastWheelSpin: 0,
+    lastSave: 0,
+    hungerDecayRate: 0.1, // в секунду
+    lastHungerTick: Date.now()
 };
 
-// Элементы DOM
-const registrationModal = document.getElementById('registrationModal');
-const gameScreen = document.getElementById('gameScreen');
-const playerNameEl = document.getElementById('playerName');
-const moneyEl = document.getElementById('money');
-const levelEl = document.getElementById('level');
-const incomeEl = document.getElementById('income');
-const tapBtn = document.getElementById('tapBtn');
-const characterEl = document.getElementById('character');
-const upgradesContainer = document.getElementById('upgradesContainer');
-const playerNameInput = document.getElementById('playerNameInput');
-const startBtn = document.getElementById('startBtn');
-
-// --- Загрузка сохранений ---
-function loadGame() {
-    const saved = localStorage.getItem('bumToMillion');
-    if (saved) {
-        const data = JSON.parse(saved);
-        Object.assign(state, data);
-        // Проверка на финальный уровень
-        if (state.level > 6) state.level = 6;
-    }
-    render();
+// --- ЭФФЕКТЫ ДЛЯ ГОДА ИГРЫ (Математика удержания) ---
+// 1. Экспоненциальная инфляция цен
+function getCost(baseCost, level) {
+    // Формула: Цена = База * (1.15 ^ Уровень)
+    return Math.floor(baseCost * Math.pow(1.15, level));
 }
 
-// --- Сохранение игры ---
-function saveGame() {
-    localStorage.setItem('bumToMillion', JSON.stringify(state));
+// 2. Асимптотический прирост урона (убывающая полезность)
+function getTapPower(basePower, level) {
+    // Формула: Урон = База * (1 - e^(-0.05 * Уровень))
+    // Это не даст игроку уйти в бесконечный отрыв, сохраняя ценность каждого нового уровня
+    return Math.floor(basePower * (1 - Math.exp(-0.05 * level)));
 }
 
-// --- Рендер интерфейса ---
-function render() {
-    playerNameEl.textContent = state.name;
-    moneyEl.textContent = state.money.toLocaleString();
-    levelEl.textContent = state.level;
-    incomeEl.textContent = state.incomePerSec.toLocaleString();
+// 3. Мягкий потолок энергии
+function getMaxEnergy(base, level) {
+    // Логарифмический рост, чтобы игрок не мог накопить бесконечную энергию за пару дней
+    return Math.floor(base + 20 * Math.log(level + 1));
+}
 
-    // Обновляем картинки персонажа (можно заменить на свои URL)
-    const sprites = [
-        '🧟‍♂️', // 1: Бомж
-        '🚶‍♂️', // 2: Прохожий
-        '🧥',    // 3: Менеджер
-        '💼',    // 4: Директор
-        '🤑',    // 5: Мажор
-        '👑'     // 6: Миллионер
-    ];
-    characterEl.textContent = sprites[state.level - 1];
+// --- Данные магазина ---
+const shopItems = [
+    { id: 'tap1', name: 'Железный палец', desc: 'Увеличивает урон', type: 'power', baseValue: 1, cost: 50, level: 0 },
+    { id: 'energy1', name: 'Батарейка', desc: 'Увеличивает макс. энергию', type: 'energy', baseValue: 100, cost: 200, level: 0 },
+    { id: 'food1', name: 'Бутерброд', desc: 'Восстанавливает 50 сытости', type: 'hunger', value: 50, cost: 30 }
+];
 
-    // Рендерим апгрейды
-    upgradesContainer.innerHTML = '';
-    state.upgrades.forEach(upg => {
-        const canAfford = state.money >= upg.cost;
-        const upgradeEl = document.createElement('div');
-        upgradeEl.className = 'upgrade';
-        upgradeEl.innerHTML = `
+// --- Функции UI ---
+function updateUI() {
+    document.getElementById('coins').innerText = `Монеты: ${state.coins}`;
+    document.getElementById('energy').innerText = `Энергия: ${state.energy}/${state.maxEnergy}`;
+    document.getElementById('hunger').innerText = `Сытость: ${state.hunger}/${state.maxHunger}`;
+    document.getElementById('tap-value').innerText = `+${state.tapPower}`;
+}
+
+function renderShop() {
+    const container = document.getElementById('shop-items');
+    container.innerHTML = '';
+    shopItems.forEach(item => {
+        const el = document.createElement('div');
+        el.className = 'item';
+        
+        let actionText = '';
+        if (item.type === 'power' || item.type === 'energy') {
+            actionText = `Ур. ${item.level} — Купить за ${getCost(item.cost, item.level)}`;
+        } else {
+            actionText = `Купить за ${item.cost}`;
+        }
+
+        el.innerHTML = `
             <div>
-                <strong>${upg.name}</strong><br>
-                <small>Приносит $${upg.income}/сек</small><br>
-                <small>Куплено: ${upg.bought}</small>
+                <strong>${item.name}</strong><br>
+                <small>${item.desc}</small>
             </div>
-            <div>
-                <small>Цена:</small><br>
-                <strong>$${upg.cost.toLocaleString()}</strong><br>
-                <button ${!canAfford ? 'disabled' : ''}>Купить</button>
-            </div>
+            <button onclick="buyItem('${item.id}')">${actionText}</button>
         `;
-        upgradeEl.querySelector('button').addEventListener('click', () => buyUpgrade(upg.id));
-        upgradesContainer.appendChild(upgradeEl);
+        container.appendChild(el);
     });
+}
 
+// --- Игровая логика ---
+function tap() {
+    if (state.energy <= 0) {
+        showToast('Недостаточно энергии!');
+        return;
+    }
+    state.energy -= 1;
+    state.coins += state.tapPower;
+    updateUI();
     saveGame();
 }
 
-// --- Покупка апгрейда ---
-function buyUpgrade(id) {
-    const upg = state.upgrades.find(u => u.id === id);
-    if (state.money >= upg.cost) {
-        state.money -= upg.cost;
-        upg.bought++;
-        state.incomePerSec += upg.income;
-        
-        // Звук или вибрация (опционально)
-        // navigator.vibrate(50); 
-        
-        checkLevelUp();
-        render();
+function buyItem(id) {
+    const item = shopItems.find(i => i.id === id);
+    if (!item) return;
+
+    let cost = item.cost;
+    if (item.type === 'power' || item.type === 'energy') {
+        cost = getCost(item.cost, item.level);
     }
-}
 
-// --- Клик по кнопке ---
-tapBtn.addEventListener('click', () => {
-    state.money += state.clickPower;
-    // Эффект нажатия
-    characterEl.style.transform = 'scale(0.95)';
-    setTimeout(() => characterEl.style.transform = 'scale(1)', 100);
-    render();
-});
-
-// --- Проверка уровня ---
-function checkLevelUp() {
-    const thresholds = [0, 100, 500, 2000, 10000, 50000, 200000]; // 6 уровней
-    if (state.money >= thresholds[state.level + 1] && state.level < 6) {
-        state.level++;
-        state.clickPower += 1; // С каждым уровнем клик становится чуть мощнее
-        // Здесь можно добавить alert(`Ты достиг уровня ${state.level}!`);
-    }
-}
-
-// --- Пассивный доход (каждую секунду) ---
-setInterval(() => {
-    if (state.incomePerSec > 0) {
-        state.money += state.incomePerSec;
-        render();
-    }
-}, 1000);
-
-// --- Регистрация ---
-startBtn.addEventListener('click', () => {
-    const name = playerNameInput.value.trim();
-    if (name) {
-        state.name = name;
-        registrationModal.style.display = 'none';
-        gameScreen.style.display = 'block';
-        render();
+    if (state.coins >= cost) {
+        state.coins -= cost;
+        if (item.type === 'power') {
+            item.level++;
+            state.tapPower = getTapPower(item.baseValue, item.level);
+        }
+        if (item.type === 'energy') {
+            item.level++;
+            state.maxEnergy = getMaxEnergy(item.baseValue, item.level);
+            if (state.energy > state.maxEnergy) state.energy = state.maxEnergy;
+        }
+        if (item.type === 'hunger') {
+            state.hunger = Math.min(state.maxHunger, state.hunger + item.value);
+        }
+        showToast('Успешно!');
+        updateUI();
+        renderShop();
+        saveGame();
     } else {
-        alert('У бомжа должно быть имя!');
+        showToast('Недостаточно монет');
     }
-});
+}
 
-// --- Автосохранение при закрытии ---
-window.addEventListener('beforeunload', saveGame);
+// Колесо Фортуны (раз в сутки)
+function spinWheel() {
+    const now = Date.now();
+    const last = state.lastWheelSpin;
+    const diff = 24 * 60 * 60 * 1000 - (now - last);
+
+    if (now - last < 24 * 60 * 60 * 1000) {
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        showToast(`Следующий спин через ${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`);
+        return;
+    }
+
+    state.lastWheelSpin = now;
+    const rewards = [
+        { type: 'coins', value: Math.floor(Math.random() * 500) + 100 },
+        { type: 'energy', value: Math.floor(Math.random() * 30) + 20 },
+        { type: 'hunger', value: Math.floor(Math.random() * 30) + 20 },
+        { type: 'lucky', value: 'Редкий буст x2 на 1 час' }
+    ];
+    const reward = rewards[Math.floor(Math.random() * rewards.length)];
+    
+    if (reward.type === 'coins') state.coins += reward.value;
+    if (reward.type === 'energy') state.energy = Math.min(state.maxEnergy, state.energy + reward.value);
+    if (reward.type === 'hunger') state.hunger = Math.min(state.maxHunger, state.hunger + reward.value);
+
+    showToast(`Вы получили: ${reward.value} ${reward.type}`);
+    updateUI();
+    saveGame();
+}
+
+// --- Математика времени (Голод и Энергия) ---
+function gameLoop() {
+    const now = Date.now();
+    const delta = (now - state.lastHungerTick) / 1000; // в секундах
+
+    // Расход сытости
+    state.hunger = Math.max(0, state.hunger - (state.hungerDecayRate * delta));
+    
+    // Если голоден — энергия не восстанавливается
+    if (state.hunger > 0) {
+        state.energy = Math.min(state.maxEnergy, state.energy + (state.energyRegenRate * delta));
+    }
+
+    state.lastHungerTick = now;
+
+    // Обновление таймера колеса
+    const wheelTimer = document.getElementById('wheel-timer');
+    const diff = state.lastWheelSpin + 24 * 60 * 60 * 1000 - now;
+    if (diff > 0) {
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        wheelTimer.innerText = `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    } else {
+        wheelTimer.innerText = 'ГОТОВО';
+    }
+
+    updateUI();
+
+    // Автосохранение раз в 10 секунд
+    if (now - state.lastSave > 10000) {
+        saveGame();
+        state.lastSave = now;
+    }
+}
+
+// --- Сохранение и загрузка ---
+function saveGame() {
+    localStorage.setItem('tapmaster_state', JSON.stringify(state));
+}
+
+function loadGame() {
+    const data = localStorage.getItem('tapmaster_state');
+    if (data) {
+        state = JSON.parse(data);
+        // Пересчитываем динамические значения при загрузке
+        state.tapPower = getTapPower(shopItems[0].baseValue, shopItems[0].level);
+        state.maxEnergy = getMaxEnergy(shopItems[1].baseValue, shopItems[1].level);
+    }
+}
+
+// --- Вспомогательные функции ---
+function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerText = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+}
+
+function openShop() {
+    document.getElementById('shopModal').style.display = 'block';
+    renderShop();
+}
+function closeShop() {
+    document.getElementById('shopModal').style.display = 'none';
+}
+function openCasino() {
+    showToast('Казино в разработке. Ставь все на зеро!');
+}
 
 // --- Инициализация ---
+document.getElementById('tapBtn').addEventListener('click', tap);
 loadGame();
+updateUI();
+renderShop();
+setInterval(gameLoop, 1000); // 1 раз в секунду
